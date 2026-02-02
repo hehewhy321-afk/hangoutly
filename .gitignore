@@ -1,0 +1,28 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+#safety you know
+.env
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+[?2004h[?1049h[1;59r(B[m[4l[?7h[39;49m[?1h[?1h[?25l[39;49m(B[m[H[2J[57;51H(B[0;7m[ New File ](B[m[57;50H(B[0;7m[ Reading... ](B[m[57;49H(B[0;7m[ Read 3 lines ](B[m[57;48H(B[0;7m[ echo -- 0 lines ](B[m[H(B[0;7m  [1/2]                                              echo                                                        [1;112H(B[m[58d(B[0;7m^G(B[m Help[58;17H(B[0;7m^O(B[m Write Out    (B[0;7m^F(B[m Where Is     (B[0;7m^K(B[m Cut[58;65H(B[0;7m^T(B[m Execute[81G(B[0;7m^C(B[m Location     (B[0;7mM-U(B[m Undo[59d(B[0;7m^X(B[m Close[59;17H(B[0;7m^R(B[m Read File    (B[0;7m^\(B[m Replace[49G(B[0;7m^U(B[m Paste[59;65H(B[0;7m^J(B[m Justify[81G(B[0;7m^/(B[m Go To Line   (B[0;7mM-E(B[m Redo[2d[?12h[?25h[?25l[?12h[?25h[?25l[?12h[?25h[?25l[?12h[?25h[?25l[?12h[?25h[?25l[57;30H(B[0;7m[ line  1/1 (100%), col  1/ 1 (100%), char  0/0 ( 0%) ](B[m[?12h[?25h[2d[?25l[57;85H[?12h[?25h[2d[?25l[57;85H[?12h[?25h[2d[?25l[57;85H[?12h[?25h[2d[?25l[57;85H[?12h[?25h[2d[?25l[57;85H[?12h[?25h[2d[?25l[57;85H[?12h[?25h[2d[?25l[57;85H[?12h[?25h[2d[?25l[57;85H[?12h[?25h[2d[59;1H[?1049l[?1l[?2004l
