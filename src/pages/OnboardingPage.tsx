@@ -73,6 +73,9 @@ const OnboardingPage = () => {
     selfie: '',
   });
 
+  const [ipData, setIpData] = useState<{ ip?: string, country_name?: string, country_code?: string }>({});
+  const [cities, setCities] = useState<string[]>([]);
+
   const avatarRef = useRef<HTMLInputElement>(null);
   const docFrontRef = useRef<HTMLInputElement>(null);
   const docBackRef = useRef<HTMLInputElement>(null);
@@ -81,6 +84,25 @@ const OnboardingPage = () => {
   const { user, profile, refreshProfile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch IP Data
+    fetch('https://ipapi.co/json/')
+      .then(res => res.json())
+      .then(data => setIpData(data))
+      .catch(err => console.error('IP Fetch Error:', err));
+
+    // Fetch Cities
+    const fetchCities = async () => {
+      // @ts-ignore
+      const { data, error } = await supabase.from('cities').select('name').eq('is_active', true).order('name');
+      if (data) {
+        // @ts-ignore
+        setCities(data.map(c => c.name));
+      }
+    };
+    fetchCities();
+  }, []);
 
   useEffect(() => {
     if (profile?.consent_accepted) {
@@ -194,6 +216,9 @@ const OnboardingPage = () => {
           is_companion: formData.isCompanion,
           consent_accepted: true,
           consent_accepted_at: new Date().toISOString(),
+          signup_ip: ipData.ip || null,
+          signup_country: ipData.country_name || null,
+          is_international: ipData.country_code !== 'NP', // Flag if not Nepal
         })
         .eq('user_id', user.id);
 
@@ -226,6 +251,8 @@ const OnboardingPage = () => {
             document_back_url: docBackUrl || null,
             selfie_url: selfieUrl,
             status: 'pending',
+            submitter_ip: ipData.ip || null,
+            submitter_country: ipData.country_name || null,
           });
         }
       }
@@ -432,7 +459,7 @@ const OnboardingPage = () => {
                       <div className="space-y-4">
                         <Label className="text-xs font-black uppercase tracking-widest text-slate-500 ml-1">Choose your city</Label>
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                          {CITIES.map((city) => (
+                          {cities.map((city) => (
                             <button
                               key={city}
                               onClick={() => setFormData({ ...formData, city })}

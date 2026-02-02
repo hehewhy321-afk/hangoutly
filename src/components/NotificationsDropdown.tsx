@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '@/hooks/use-toast';
 import { Bell, Calendar, DollarSign, MessageSquare, AlertCircle, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
@@ -53,7 +54,7 @@ export const NotificationsDropdown = () => {
   };
 
   const subscribeToNotifications = () => {
-    if (!user) return () => {};
+    if (!user) return () => { };
 
     const channel = supabase
       .channel(`notifications-${user.id}`)
@@ -68,6 +69,10 @@ export const NotificationsDropdown = () => {
         (payload) => {
           setNotifications((prev) => [payload.new as Notification, ...prev]);
           setUnreadCount((prev) => prev + 1);
+          toast({
+            title: payload.new.title,
+            description: payload.new.message,
+          });
         }
       )
       .subscribe();
@@ -76,6 +81,9 @@ export const NotificationsDropdown = () => {
       supabase.removeChannel(channel);
     };
   };
+
+  const { toast } = useToast();
+
 
   const markAsRead = async (notificationId: string) => {
     await supabase
@@ -212,14 +220,12 @@ export const NotificationsDropdown = () => {
                   <button
                     key={notification.id}
                     onClick={() => handleNotificationClick(notification)}
-                    className={`w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors ${
-                      !notification.is_read ? 'bg-primary/5' : ''
-                    }`}
+                    className={`w-full text-left px-4 py-3 hover:bg-muted/50 transition-colors ${!notification.is_read ? 'bg-primary/5' : ''
+                      }`}
                   >
                     <div className="flex gap-3">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-                        notification.is_read ? 'bg-muted' : 'bg-primary/10'
-                      }`}>
+                      <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${notification.is_read ? 'bg-muted' : 'bg-primary/10'
+                        }`}>
                         <Icon className={`w-5 h-5 ${notification.is_read ? 'text-muted-foreground' : 'text-primary'}`} />
                       </div>
                       <div className="flex-1 min-w-0">

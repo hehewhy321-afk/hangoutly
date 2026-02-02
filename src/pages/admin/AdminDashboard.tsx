@@ -7,8 +7,11 @@ import {
   Ban, Clock, DollarSign, Activity, MoreVertical, Mail,
   Phone, MapPin, BadgeCheck, UserX, Edit, Download, Upload,
   RefreshCw, AlertCircle, ShieldCheck, Zap, Globe, Heart,
-  BarChart3, LifeBuoy, Info, Loader2, UserCheck
+  BarChart3, LifeBuoy, Info, Loader2, UserCheck, Save, Trash2, Edit2, Plus
 } from 'lucide-react';
+import {
+  LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell
+} from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -108,9 +111,22 @@ const AdminDashboard = () => {
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [verifications, setVerifications] = useState<Verification[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [cities, setCities] = useState<any[]>([]);
+  const [newCity, setNewCity] = useState('');
+  const [editingCity, setEditingCity] = useState<any>(null); // For rename modal
+  const [deletingCityId, setDeletingCityId] = useState<string | null>(null); // For delete confirmation
+  const [settings, setSettings] = useState<any>({});
+  const [savingSettings, setSavingSettings] = useState(false);
+  const [analyticsData, setAnalyticsData] = useState<{
+    revenue: any[];
+    userGrowth: any[];
+    activityDistribution: any[];
+  }>({ revenue: [], userGrowth: [], activityDistribution: [] });
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null);
+  const [complaintFilter, setComplaintFilter] = useState<'all' | 'open' | 'resolved'>('all');
+  const [verificationFilter, setVerificationFilter] = useState<'all' | 'nepal' | 'international'>('nepal'); // Default to Nepal
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [userBookings, setUserBookings] = useState<any[]>([]);
   const [rejectionReason, setRejectionReason] = useState('');
@@ -180,30 +196,81 @@ const AdminDashboard = () => {
   const fetchDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [uRes, cRes, vRes, compRes, bRes] = await Promise.all([
+      const [uRes, compProfRes, vRes, complRes, bRes, citiesRes, settingsRes, recentUsersRes, recentVerificationsRes, recentComplaintsRes] = await Promise.all([
         supabase.from('profiles').select('id', { count: 'exact' }),
         supabase.from('profiles').select('id', { count: 'exact' }).eq('is_companion', true),
         supabase.from('verifications').select('*').eq('status', 'pending'),
         supabase.from('complaints').select('*').eq('status', 'open'),
         supabase.from('bookings').select('total_amount, status'),
+        // @ts-ignore
+        supabase.from('cities').select('*').order('name'),
+        // @ts-ignore
+        supabase.from('app_settings').select('*'),
+        supabase.from('profiles').select('*').order('created_at', { ascending: false }).limit(50),
+        supabase.from('verifications').select('*, profile:profile_id(first_name, avatar_url, city)').order('created_at', { ascending: false }).limit(50),
+        supabase.from('complaints').select('*').order('created_at', { ascending: false }).limit(50),
       ]);
+
       const completed = bRes.data?.filter(b => b.status === 'completed') || [];
       const active = bRes.data?.filter(b => ['active', 'pending', 'accepted'].includes(b.status)) || [];
+
       setStats({
         totalUsers: uRes.count || 0,
-        totalCompanions: cRes.count || 0,
+        totalCompanions: compProfRes.count || 0,
         pendingVerifications: vRes.data?.length || 0,
-        openComplaints: compRes.data?.length || 0,
+        openComplaints: complRes.data?.length || 0,
         activeBookings: active.length,
         completedBookings: completed.length,
         totalRevenue: completed.reduce((sum, b) => sum + (b.total_amount || 0), 0),
       });
-      const { data: uData } = await supabase.from('profiles').select('*').order('created_at', { ascending: false });
-      setUsers(uData || []);
-      const { data: vData } = await supabase.from('verifications').select('*, profile:profile_id(first_name, avatar_url, city)').order('created_at', { ascending: false }).limit(50);
-      setVerifications((vData as any) || []);
-      const { data: qData } = await supabase.from('complaints').select('*').order('created_at', { ascending: false }).limit(50);
-      setComplaints(qData || []);
+
+      // @ts-ignore
+      setCities(citiesRes.data || []);
+      setUsers(recentUsersRes.data || []);
+      setVerifications((recentVerificationsRes.data as any) || []);
+      setComplaints(recentComplaintsRes.data || []);
+
+      const settingsMap: any = {};
+      // @ts-ignore
+      (settingsRes.data || []).forEach((item: any) => {
+        settingsMap[item.key] = item.value;
+      });
+      setSettings(settingsMap);
+
+      // Process Analytics
+      const allBookings = bRes.data || [];
+      const revenueByAcc: any = {};
+      const activityCount: any = {};
+
+      allBookings.forEach((b: any) => {
+        const date = b.created_at.split('T')[0];
+        if (b.status === 'completed') {
+          revenueByAcc[date] = (revenueByAcc[date] || 0) + (b.total_amount * (settingsMap.commission_rate || 0.1));
+        }
+        if (b.activity) {
+          activityCount[b.activity] = (activityCount[b.activity] || 0) + 1;
+        }
+      });
+
+      const revenueChartData = Object.entries(revenueByAcc).map(([date, amount]) => ({ date, amount })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      const activityChartData = Object.entries(activityCount).map(([name, value]) => ({ name, value }));
+
+      // User Growth
+      const userGrowthAcc: any = {};
+      // @ts-ignore
+      (uRes.data || []).forEach((u: any) => {
+        const date = u.created_at.split('T')[0];
+        userGrowthAcc[date] = (userGrowthAcc[date] || 0) + 1;
+      });
+      const userGrowthChartData = Object.entries(userGrowthAcc).map(([date, count]) => ({ date, count })).sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+      setAnalyticsData({
+        revenue: revenueChartData,
+        userGrowth: userGrowthChartData,
+        activityDistribution: activityChartData
+      });
+
     } catch (e) { console.error(e); } finally { setIsLoading(false); }
   };
 
@@ -308,10 +375,84 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleAddCity = async () => {
+    if (!newCity.trim()) return;
+    try {
+      // @ts-ignore
+      const { data, error } = await supabase.from('cities').insert([{ name: newCity, is_active: true }]).select();
+      if (error) throw error;
+      setCities([...cities, data[0]]);
+      setNewCity('');
+      toast({ title: 'City Added', description: `${newCity} has been added to the list.` });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to add city.' });
+    }
+  };
+
+  const toggleCityStatus = async (id: string, currentStatus: boolean) => {
+    try {
+      // @ts-ignore
+      const { error } = await supabase.from('cities').update({ is_active: !currentStatus }).eq('id', id);
+      if (error) throw error;
+      setCities(cities.map(c => c.id === id ? { ...c, is_active: !currentStatus } : c));
+      toast({ title: 'Status Updated', description: 'City status changed successfully.' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update status.' });
+    }
+  };
+
+  const handleDeleteCity = async () => {
+    if (!deletingCityId) return;
+    try {
+      // @ts-ignore
+      const { error } = await supabase.from('cities').delete().eq('id', deletingCityId);
+      if (error) throw error;
+      setCities(cities.filter(c => c.id !== deletingCityId));
+      toast({ title: 'City Deleted', description: 'City has been removed permanently.' });
+      setDeletingCityId(null);
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete city.' });
+    }
+  };
+
+  const handleUpdateCity = async () => {
+    if (!editingCity || !editingCity.name.trim()) return;
+    try {
+      // @ts-ignore
+      const { error } = await supabase.from('cities').update({ name: editingCity.name }).eq('id', editingCity.id);
+      if (error) throw error;
+      setCities(cities.map(c => c.id === editingCity.id ? { ...c, name: editingCity.name } : c));
+      setEditingCity(null);
+      toast({ title: 'City Updated', description: 'City name updated successfully.' });
+    } catch (e) {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to update city.' });
+    }
+  };
+
   const fetchUserDetails = async (userProfile: UserProfile) => {
     setSelectedUser(userProfile);
     const { data: bookings } = await supabase.from('bookings').select('*, companion:companion_id(first_name, avatar_url)').or(`user_id.eq.${userProfile.user_id},companion_id.eq.${userProfile.id}`).order('created_at', { ascending: false });
     setUserBookings(bookings || []);
+  };
+
+  const handleSaveSettings = async () => {
+    setSavingSettings(true);
+    try {
+      const updates = Object.entries(settings).map(([key, value]) => ({
+        key,
+        value,
+        updated_at: new Date().toISOString()
+      }));
+
+      // @ts-ignore
+      const { error } = await supabase.from('app_settings').upsert(updates);
+      if (error) throw error;
+      toast({ title: 'Settings Saved', description: 'Platform settings have been updated.' });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message, variant: 'destructive' });
+    } finally {
+      setSavingSettings(false);
+    }
   };
 
   const handleRequestReverify = async (profileId: string) => {
@@ -345,8 +486,17 @@ const AdminDashboard = () => {
   };
 
   const filteredUsers = users.filter(u => u.first_name?.toLowerCase().includes(searchQuery.toLowerCase()) || u.city?.toLowerCase().includes(searchQuery.toLowerCase()) || u.phone?.includes(searchQuery));
+
+  const filteredVerifications = verifications.filter(v => {
+    if (verificationFilter === 'all') return true;
+    const country = v.submitter_country?.toLowerCase() || '';
+    if (verificationFilter === 'nepal') return country === 'nepal' || country === ''; // Default empty to Nepal or make strict? Let's assume empty might be old data, but usually better to show it. Actually logic: IP-based Country.
+    if (verificationFilter === 'international') return country !== 'nepal' && country !== '';
+    return true;
+  });
+
   const usersPag = usePagination({ data: filteredUsers, itemsPerPage: 10 });
-  const verPag = usePagination({ data: verifications, itemsPerPage: 10 });
+  const verPag = usePagination({ data: filteredVerifications, itemsPerPage: 10 });
   const comPag = usePagination({ data: complaints, itemsPerPage: 10 });
 
   if (authLoading || !isAdmin) return (
@@ -391,8 +541,10 @@ const AdminDashboard = () => {
             <div className="flex gap-10">
               {[
                 { id: 'overview', label: 'Overview', icon: Activity },
+                { id: 'analytics', label: 'Analytics', icon: BarChart3 },
                 { id: 'users', label: 'Users', icon: Users, count: stats.totalUsers },
                 { id: 'verifications', label: 'Verifications', icon: ShieldCheck, count: stats.pendingVerifications },
+                { id: 'cities', label: 'Cities', icon: MapPin },
                 { id: 'complaints', label: 'Reports', icon: AlertTriangle, count: stats.openComplaints },
                 { id: 'settings', label: 'Settings', icon: Settings }
               ].map((tab) => (
@@ -634,6 +786,24 @@ const AdminDashboard = () => {
 
             {activeTab === 'verifications' && (
               <motion.div key="verifications" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+                {/* Verification Filters */}
+                <div className="flex gap-2 mb-4">
+                  {(['all', 'nepal', 'international'] as const).map((filter) => (
+                    <button
+                      key={filter}
+                      onClick={() => setVerificationFilter(filter)}
+                      className={cn(
+                        "px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                        verificationFilter === filter
+                          ? "bg-slate-800 text-white shadow-lg"
+                          : "bg-white text-slate-500 hover:bg-slate-50 border border-slate-200"
+                      )}
+                    >
+                      {filter === 'all' ? 'All Requests' : filter === 'nepal' ? 'Nepal Only' : 'International'}
+                    </button>
+                  ))}
+                </div>
+
                 <div className="overflow-hidden rounded-[2.5rem] bg-white border border-slate-200/60 shadow-2xl">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -655,7 +825,14 @@ const AdminDashboard = () => {
                               </div>
                               <div>
                                 <p className="text-sm font-black text-slate-800 tracking-tight">{v.full_name}</p>
-                                <p className="text-[10px] font-bold text-slate-400 mt-0.5">{v.profile?.city}</p>
+                                <div className="flex items-center gap-2 mt-0.5">
+                                  <p className="text-[10px] font-bold text-slate-400 capitalize">{v.profile?.city}</p>
+                                  {v.submitter_country && (
+                                    <span className="text-[9px] font-black uppercase text-slate-300 bg-slate-100 px-1.5 py-0.5 rounded">
+                                      {v.submitter_country}
+                                    </span>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </td>
@@ -770,13 +947,288 @@ const AdminDashboard = () => {
               </motion.div>
             )}
 
-            {activeTab === 'settings' && (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-card p-12 text-center">
-                <div className="w-24 h-24 mx-auto bg-slate-50 rounded-[2rem] flex items-center justify-center mb-8">
-                  <Settings className="w-12 h-12 text-slate-200" />
+            {activeTab === 'cities' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                <div className="flex flax-col md:flex-row gap-4 justify-between items-end md:items-center">
+                  <div>
+                    <h2 className="text-2xl font-black text-slate-800 tracking-tight">City Management</h2>
+                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Manage Service Locations</p>
+                  </div>
+                  <div className="flex items-center gap-4 bg-white p-2 pl-4 rounded-2xl shadow-lg border border-indigo-50 w-full md:w-auto">
+                    <input
+                      value={newCity}
+                      onChange={(e) => setNewCity(e.target.value)}
+                      placeholder="New City Name..."
+                      className="bg-transparent border-none outline-none font-bold text-slate-700 placeholder:text-slate-300 w-full md:w-64"
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddCity()}
+                    />
+                    <MagneticButton
+                      onClick={handleAddCity}
+                      disabled={!newCity.trim()}
+                      className="w-12 h-12 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 disabled:opacity-50 disabled:shadow-none"
+                    >
+                      <Plus className="w-6 h-6" />
+                    </MagneticButton>
+                  </div>
                 </div>
-                <h3 className="text-3xl font-black text-slate-800 tracking-tight mb-2">Coming Soon</h3>
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-[0.3em]">This section is under development.</p>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {cities.map((city) => (
+                    <div key={city.id} className="group p-6 rounded-3xl bg-white border border-slate-100 hover:border-indigo-100 shadow-sm hover:shadow-xl transition-all duration-300 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className={cn("w-12 h-12 rounded-2xl flex items-center justify-center transition-colors", city.is_active ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-400")}>
+                          <MapPin className="w-6 h-6" />
+                        </div>
+                        <div>
+                          {editingCity?.id === city.id ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={editingCity.name}
+                                onChange={(e) => setEditingCity({ ...editingCity, name: e.target.value })}
+                                className="h-8 font-bold text-lg"
+                                autoFocus
+                              />
+                              <Button size="sm" onClick={handleUpdateCity} className="h-8 w-8 p-0 bg-indigo-600 hover:bg-indigo-700 rounded-lg">
+                                <Check className="w-4 h-4 text-white" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => setEditingCity(null)} className="h-8 w-8 p-0 hover:bg-slate-100 rounded-lg">
+                                <X className="w-4 h-4 text-slate-500" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <>
+                              <h3 className={cn("text-lg font-black tracking-tight", city.is_active ? "text-slate-800" : "text-slate-400")}>{city.name}</h3>
+                              <p className="text-[10px] uppercase tracking-widest font-bold text-slate-400">
+                                {city.is_active ? 'Active Location' : 'Inactive Location'}
+                              </p>
+                            </>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button
+                          onClick={() => toggleCityStatus(city.id, city.is_active)}
+                          className={cn(
+                            "h-10 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all",
+                            city.is_active
+                              ? "bg-emerald-50 text-emerald-600 hover:bg-emerald-100"
+                              : "bg-slate-100 text-slate-500 hover:bg-slate-200"
+                          )}
+                        >
+                          {city.is_active ? 'Active' : 'Disabled'}
+                        </button>
+
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setEditingCity(city)}
+                          className="h-10 w-10 rounded-xl hover:bg-indigo-50 text-slate-400 hover:text-indigo-600"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </Button>
+
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => setDeletingCityId(city.id)}
+                          className="h-10 w-10 rounded-xl hover:bg-rose-50 text-slate-400 hover:text-rose-600"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {cities.length === 0 && (
+                    <div className="p-12 text-center text-slate-400 font-medium">
+                      No cities found. Add one above.
+                    </div>
+                  )}
+                </div>
+
+                {/* Delete Confirmation Modal */}
+                <Dialog open={!!deletingCityId} onOpenChange={() => setDeletingCityId(null)}>
+                  <DialogContent className="glass-card border-0 rounded-[2rem] p-8 max-w-sm">
+                    <div className="text-center space-y-4">
+                      <div className="w-16 h-16 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center mx-auto mb-4">
+                        <AlertTriangle className="w-8 h-8" />
+                      </div>
+                      <h3 className="text-xl font-black text-slate-800">Delete City?</h3>
+                      <p className="text-sm text-slate-500 font-medium">This action cannot be undone. It might affect existing users.</p>
+                      <div className="flex gap-3 pt-4">
+                        <Button variant="ghost" onClick={() => setDeletingCityId(null)} className="flex-1 h-12 rounded-xl font-bold">Cancel</Button>
+                        <Button onClick={handleDeleteCity} className="flex-1 h-12 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold shadow-lg shadow-rose-200">Delete</Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
+              </motion.div>
+            )}
+
+            {activeTab === 'settings' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+                <div className="glass-card p-12 border border-slate-200/60 shadow-xl">
+                  <div className="flex items-center gap-4 mb-8">
+                    <div className="w-16 h-16 rounded-2xl bg-indigo-50 flex items-center justify-center">
+                      <Settings className="w-8 h-8 text-indigo-500" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl font-black text-slate-800 tracking-tight">Platform Settings</h2>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Global Configuration</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-4">
+                      <Label className="uppercase text-xs font-black tracking-widest text-slate-500">Commission Rate (%)</Label>
+                      <Input
+                        type="number"
+                        value={settings.commission_rate || ''}
+                        onChange={(e) => setSettings({ ...settings, commission_rate: parseFloat(e.target.value) })}
+                        placeholder="10"
+                        className="h-14 rounded-2xl bg-slate-50 font-bold"
+                      />
+                      <p className="text-xs text-slate-400">Percentage taken from every booking.</p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label className="uppercase text-xs font-black tracking-widest text-slate-500">Support Email</Label>
+                      <Input
+                        value={settings.support_email || ''}
+                        onChange={(e) => setSettings({ ...settings, support_email: e.target.value })}
+                        placeholder="support@example.com"
+                        className="h-14 rounded-2xl bg-slate-50 font-bold"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label className="uppercase text-xs font-black tracking-widest text-slate-500">Min. Hourly Rate (Rs.)</Label>
+                      <Input
+                        type="number"
+                        value={settings.min_hourly_rate || ''}
+                        onChange={(e) => setSettings({ ...settings, min_hourly_rate: parseInt(e.target.value) })}
+                        placeholder="500"
+                        className="h-14 rounded-2xl bg-slate-50 font-bold"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <Label className="uppercase text-xs font-black tracking-widest text-slate-500">Max Gallery Images</Label>
+                      <Input
+                        type="number"
+                        value={settings.max_gallery_images || ''}
+                        onChange={(e) => setSettings({ ...settings, max_gallery_images: parseInt(e.target.value) })}
+                        placeholder="3"
+                        className="h-14 rounded-2xl bg-slate-50 font-bold"
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 md:col-span-2">
+                      <div className="flex items-center gap-4">
+                        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center transition-colors", settings.maintenance_mode ? "bg-rose-100 text-rose-500" : "bg-slate-200 text-slate-400")}>
+                          <Ban className="w-6 h-6" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-800">Maintenance Mode</h4>
+                          <p className="text-xs text-slate-400 font-medium">Disable platform access for users</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => setSettings({ ...settings, maintenance_mode: !settings.maintenance_mode })}
+                        className={cn("w-16 h-8 rounded-full relative transition-all", settings.maintenance_mode ? "bg-rose-500" : "bg-slate-300")}
+                      >
+                        <motion.div
+                          animate={{ x: settings.maintenance_mode ? 34 : 4 }}
+                          className="absolute top-1 w-6 h-6 rounded-full bg-white shadow-sm"
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-12 flex justify-end">
+                    <MagneticButton onClick={handleSaveSettings} disabled={savingSettings} className="h-14 px-8 rounded-2xl bg-indigo-600 text-white shadow-lg shadow-indigo-200 flex items-center gap-3 font-black uppercase tracking-widest">
+                      {savingSettings ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
+                      Save Changes
+                    </MagneticButton>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {activeTab === 'analytics' && (
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Revenue Chart */}
+                  <div className="glass-card p-8 border border-slate-200/60 shadow-xl col-span-2">
+                    <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+                      <BarChart3 className="w-5 h-5 text-indigo-500" />
+                      Revenue Trends
+                    </h3>
+                    <div className="h-[300px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={analyticsData.revenue}>
+                          <defs>
+                            <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
+                              <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                            </linearGradient>
+                          </defs>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                          <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                          <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(value) => `Rs ${value}`} />
+                          <RechartsTooltip
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                          />
+                          <Area type="monotone" dataKey="amount" stroke="#6366f1" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* User Growth */}
+                  <div className="glass-card p-8 border border-slate-200/60 shadow-xl">
+                    <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+                      <Users className="w-5 h-5 text-emerald-500" />
+                      User Growth
+                    </h3>
+                    <div className="h-[250px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <LineChart data={analyticsData.userGrowth}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                          <XAxis dataKey="date" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                          <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                          <RechartsTooltip
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                          />
+                          <Line type="monotone" dataKey="count" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981' }} />
+                        </LineChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+
+                  {/* Activity Distribution */}
+                  <div className="glass-card p-8 border border-slate-200/60 shadow-xl">
+                    <h3 className="text-lg font-black text-slate-800 mb-6 flex items-center gap-2">
+                      <Activity className="w-5 h-5 text-amber-500" />
+                      Top Activities
+                    </h3>
+                    <div className="h-[250px] w-full">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analyticsData.activityDistribution}>
+                          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                          <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                          <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                          <RechartsTooltip
+                            cursor={{ fill: 'transparent' }}
+                            contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' }}
+                          />
+                          <Bar dataKey="value" fill="#f59e0b" radius={[6, 6, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </div>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

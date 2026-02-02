@@ -40,6 +40,21 @@ export const FilterSheet = ({ isOpen, onClose, filters, onApply }: FilterSheetPr
     onClose();
   };
 
+  const [availableCities, setAvailableCities] = useState<string[]>([]);
+
+  // Fetch Cities
+  useState(() => {
+    const fetchCities = async () => {
+      // @ts-ignore
+      const { data } = await import('@/integrations/supabase/client').then(m => m.supabase.from('cities').select('name').eq('is_active', true).order('name'));
+      if (data) {
+        // @ts-ignore
+        setAvailableCities(data.map(c => c.name));
+      }
+    };
+    fetchCities();
+  });
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -93,7 +108,7 @@ export const FilterSheet = ({ isOpen, onClose, filters, onApply }: FilterSheetPr
                   >
                     All Cities
                   </button>
-                  {CITIES.map((city) => (
+                  {availableCities.map((city) => (
                     <button
                       key={city}
                       onClick={() => setLocalFilters((prev) => ({ ...prev, city }))}
@@ -167,22 +182,19 @@ export const FilterSheet = ({ isOpen, onClose, filters, onApply }: FilterSheetPr
                   onClick={() =>
                     setLocalFilters((prev) => ({ ...prev, onlineOnly: !prev.onlineOnly }))
                   }
-                  className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${
-                    localFilters.onlineOnly
-                      ? 'bg-primary/10 border-2 border-primary'
-                      : 'bg-muted border-2 border-transparent'
-                  }`}
+                  className={`w-full flex items-center justify-between p-4 rounded-xl transition-all ${localFilters.onlineOnly
+                    ? 'bg-primary/10 border-2 border-primary'
+                    : 'bg-muted border-2 border-transparent'
+                    }`}
                 >
                   <span className="font-medium">Online Now Only</span>
                   <div
-                    className={`w-12 h-6 rounded-full transition-colors ${
-                      localFilters.onlineOnly ? 'bg-primary' : 'bg-muted-foreground/30'
-                    }`}
+                    className={`w-12 h-6 rounded-full transition-colors ${localFilters.onlineOnly ? 'bg-primary' : 'bg-muted-foreground/30'
+                      }`}
                   >
                     <div
-                      className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${
-                        localFilters.onlineOnly ? 'translate-x-6' : 'translate-x-0.5'
-                      } mt-0.5`}
+                      className={`w-5 h-5 rounded-full bg-white shadow-md transform transition-transform ${localFilters.onlineOnly ? 'translate-x-6' : 'translate-x-0.5'
+                        } mt-0.5`}
                     />
                   </div>
                 </button>
@@ -196,9 +208,8 @@ export const FilterSheet = ({ isOpen, onClose, filters, onApply }: FilterSheetPr
                     <button
                       key={activity}
                       onClick={() => toggleActivity(activity)}
-                      className={`filter-chip ${
-                        localFilters.activities.includes(activity) ? 'active' : ''
-                      }`}
+                      className={`filter-chip ${localFilters.activities.includes(activity) ? 'active' : ''
+                        }`}
                     >
                       {activity}
                     </button>

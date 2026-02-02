@@ -17,6 +17,7 @@ import {
   PaginationPrevious,
   PaginationEllipsis,
 } from '@/components/ui/pagination';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { FilterOptions, Profile } from '@/types';
 import { CITIES } from '@/types';
 import { CompanionProfile } from '@/hooks/useCompanions';
@@ -58,6 +59,7 @@ const DiscoverPage = () => {
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [hasAcceptedConsent, setHasAcceptedConsent] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [cities, setCities] = useState<string[]>([]);
   const [filters, setFilters] = useState<FilterOptions>({
     city: '',
     gender: '',
@@ -88,6 +90,18 @@ const DiscoverPage = () => {
   });
 
   const hasActiveBooking = !!userActiveBooking;
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      // @ts-ignore
+      const { data } = await supabase.from('cities').select('name').eq('is_active', true).order('name');
+      if (data) {
+        // @ts-ignore
+        setCities(data.map(c => c.name));
+      }
+    };
+    fetchCities();
+  }, []);
 
   const { data: paginatedData, isLoading: isLoadingCompanions } = useQuery({
     queryKey: ['companions-paginated', currentPage, selectedCity, filters],
@@ -153,7 +167,7 @@ const DiscoverPage = () => {
           return { ...item, profile: { ...item.profile, age } };
         });
 
-      if (selectedCity || filters.city) {
+      if ((selectedCity || filters.city) && (selectedCity !== 'all')) {
         const city = selectedCity || filters.city;
         filtered = filtered.filter((c: any) => c.profile?.city === city);
       }
@@ -416,19 +430,22 @@ const DiscoverPage = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="relative group">
                 <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-                <select
+                <Select
                   value={selectedCity}
-                  onChange={(e) => setSelectedCity(e.target.value)}
-                  className="w-full sm:w-48 pl-12 pr-10 py-3.5 rounded-2xl bg-slate-50 border border-slate-200 focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all appearance-none cursor-pointer font-medium"
+                  onValueChange={setSelectedCity}
                 >
-                  <option value="">All Cities</option>
-                  {CITIES.map((city) => (
-                    <option key={city} value={city}>
-                      {city}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
+                  <SelectTrigger className="px-10 w-full sm:w-48 h-full py-3.5 rounded-2xl bg-slate-50 border-slate-200 font-medium">
+                    <SelectValue placeholder="All Cities" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl border-slate-100 font-medium">
+                    <SelectItem value="all">All Cities</SelectItem>
+                    {cities.map((city) => (
+                      <SelectItem key={city} value={city}>
+                        {city}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <Button

@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { DashboardLayout } from '@/components/DashboardLayout';
@@ -25,6 +26,7 @@ const ProfilePage = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     first_name: '',
     last_name: '',
@@ -33,6 +35,7 @@ const ProfilePage = () => {
     area: '',
     profession: '',
     bio: '',
+    hourly_rate: 0,
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
@@ -56,23 +59,36 @@ const ProfilePage = () => {
         area: profile.area || '',
         profession: profile.profession || '',
         bio: profile.bio || '',
+        hourly_rate: 0, // Default, will be updated by fetchCompanionData
       });
 
-      // Fetch gallery images
-      const fetchGallery = async () => {
+      // Fetch Cities
+      const fetchCities = async () => {
+        // @ts-ignore
+        const { data } = await supabase.from('cities').select('name').eq('is_active', true).order('name');
+        if (data) {
+          // @ts-ignore
+          setCities(data.map(c => c.name));
+        }
+      };
+      fetchCities();
+
+      // Fetch gallery images and hourly rate
+      const fetchCompanionData = async () => {
         const { data, error } = await supabase
           .from('companion_profiles')
-          .select('gallery_images')
+          .select('gallery_images, hourly_rate')
           .eq('profile_id', profile.id)
           .maybeSingle();
 
         if (data) {
           setGalleryImages(data.gallery_images || []);
+          setFormData(prev => ({ ...prev, hourly_rate: data.hourly_rate || 0 }));
         }
       };
 
       if (profile.is_companion || profile.id) {
-        fetchGallery();
+        fetchCompanionData();
       }
     }
   }, [profile]);
@@ -163,11 +179,24 @@ const ProfilePage = () => {
         const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(`${user.id}/avatar.${avatarFile.name.split('.').pop()}`);
         avatarUrl = urlData.publicUrl;
       }
+
+      const { hourly_rate, ...profileData } = formData;
       const { error } = await supabase
         .from('profiles')
-        .update({ ...formData, avatar_url: avatarUrl })
+        .update({ ...profileData, avatar_url: avatarUrl })
         .eq('user_id', user.id);
+
       if (error) throw error;
+
+      if (profile?.is_companion) {
+        const { error: companionError } = await supabase
+          .from('companion_profiles')
+          .update({ hourly_rate: formData.hourly_rate })
+          .eq('profile_id', profile.id);
+
+        if (companionError) throw companionError;
+      }
+
       await refreshProfile();
       setIsEditing(false);
       setAvatarFile(null);
@@ -424,12 +453,21 @@ const ProfilePage = () => {
                     <Label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Location</Label>
                     <div className="flex gap-4">
                       {isEditing ? (
-                        <Input
-                          value={formData.city}
-                          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                          className="h-14 rounded-2xl bg-slate-50 focus:bg-white border-slate-100 font-bold"
-                          placeholder="City"
-                        />
+                        <div className="flex-1">
+                          <Select
+                            value={formData.city}
+                            onValueChange={(value) => setFormData({ ...formData, city: value })}
+                          >
+                            <SelectTrigger className="h-14 w-full rounded-2xl bg-slate-50 border-slate-100 font-bold px-4">
+                              <SelectValue placeholder="Select City" />
+                            </SelectTrigger>
+                            <SelectContent className="rounded-xl border-slate-100 font-bold">
+                              {cities.map((city) => (
+                                <SelectItem key={city} value={city}>{city}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       ) : (
                         <div className="flex-1 h-14 flex items-center px-6 rounded-2xl bg-slate-50 border border-slate-100 font-bold text-slate-700">
                           {profile?.city || 'Undisclosed'}
@@ -446,6 +484,28 @@ const ProfilePage = () => {
                     </div>
                   </div>
                 </div>
+
+                {(profile?.is_companion || formData.hourly_rate > 0) && (
+                  <div className="space-y-3">
+                    <Label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Hourly Rate (Rs.)</Label>
+                    {isEditing ? (
+                      <div className="relative">
+                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">Rs.</span>
+                        <Input
+                          type="number"
+                          value={formData.hourly_rate}
+                          onChange={(e) => setFormData({ ...formData, hourly_rate: Number(e.target.value) })}
+                          className="h-14 pl-12 rounded-2xl bg-slate-50 focus:bg-white border-slate-100 font-bold"
+                          placeholder="500"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-14 flex items-center px-6 rounded-2xl bg-emerald-50 border border-emerald-100 font-black text-emerald-700 shadow-sm w-fit">
+                        Rs. {formData.hourly_rate} / hr
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <div className="space-y-3">
                   <Label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Bio</Label>

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { User, Calendar, Heart, Settings, Shield, LogOut, Menu, X, Search, ChevronRight, Home, LayoutDashboard, Compass } from 'lucide-react';
+import { User, Calendar, Heart, Settings, Shield, LogOut, Menu, X, Search, ChevronRight, ChevronLeft, Home, LayoutDashboard, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { NotificationsDropdown } from '@/components/NotificationsDropdown';
@@ -34,6 +34,7 @@ export const DashboardLayout = ({
   subtitle
 }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const {
@@ -91,37 +92,65 @@ export const DashboardLayout = ({
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 flex">
+    <div className="min-h-screen bg-slate-50/50 flex transition-all duration-300">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex flex-col w-72 fixed inset-y-0 left-0 z-40 bg-white border-r border-slate-200">
-        <div className="p-8">
+      <aside
+        className={cn(
+          "hidden lg:flex flex-col fixed inset-y-0 left-0 z-40 bg-white border-r border-slate-200 transition-all duration-300",
+          isCollapsed ? "w-20" : "w-72"
+        )}
+      >
+        <div className={cn("p-6 flex items-center", isCollapsed ? "justify-center" : "justify-between")}>
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow-primary">
+            <div className="w-10 h-10 rounded-xl bg-gradient-primary flex items-center justify-center shadow-glow-primary shrink-0">
               <Heart className="w-5 h-5 text-white" fill="white" />
             </div>
-            <span className="text-2xl font-bold tracking-tight text-gradient-primary">Hangoutly</span>
+            {!isCollapsed && (
+              <span className="text-xl font-bold tracking-tight text-gradient-primary">Hangoutly</span>
+            )}
           </Link>
+          {!isCollapsed && (
+            <button
+              onClick={() => setIsCollapsed(true)}
+              className="p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
+        {isCollapsed && (
+          <button
+            onClick={() => setIsCollapsed(false)}
+            className="mx-auto mb-4 p-2 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        )}
+
         {/* Navigation */}
-        <nav className="flex-1 px-4 space-y-2 overflow-y-auto mt-4">
-          <div className="px-4 mb-4">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Main Menu</p>
-          </div>
+        <nav className="flex-1 px-3 space-y-2 overflow-y-auto mt-2">
+          {!isCollapsed && (
+            <div className="px-4 mb-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Main Menu</p>
+            </div>
+          )}
           {navItems.map(item => (
             <button
               key={item.path}
               onClick={() => handleNavClick(item.path)}
               className={cn(
-                "w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-base font-semibold transition-all group",
+                "w-full flex items-center gap-4 px-3 py-3 rounded-2xl text-base font-semibold transition-all group relative",
                 isActive(item.path)
                   ? "bg-primary text-white shadow-deep"
-                  : "text-muted-foreground hover:bg-slate-50 hover:text-foreground"
+                  : "text-muted-foreground hover:bg-slate-50 hover:text-foreground",
+                isCollapsed && "justify-center px-2"
               )}
+              title={isCollapsed ? item.label : undefined}
             >
-              <item.icon className={cn("w-5 h-5 transition-colors", isActive(item.path) ? "text-white" : "text-muted-foreground group-hover:text-primary")} />
-              {item.label}
-              {isActive(item.path) && (
+              <item.icon className={cn("w-5 h-5 transition-colors shrink-0", isActive(item.path) ? "text-white" : "text-muted-foreground group-hover:text-primary")} />
+              {!isCollapsed && <span>{item.label}</span>}
+              {isActive(item.path) && !isCollapsed && (
                 <motion.div layoutId="nav-indicator" className="w-1.5 h-6 bg-white/40 rounded-full ml-auto" />
               )}
             </button>
@@ -129,9 +158,9 @@ export const DashboardLayout = ({
         </nav>
 
         {/* User Card */}
-        <div className="p-6 border-t border-slate-100">
-          <div className="flex items-center gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-4">
-            <div className="w-11 h-11 rounded-full bg-white border border-slate-200 p-0.5 overflow-hidden shadow-soft">
+        <div className="p-4 border-t border-slate-100 space-y-2">
+          <div className={cn("flex items-center gap-3 p-3 rounded-2xl bg-slate-50 border border-slate-100", isCollapsed && "justify-center p-2 bg-transparent border-0")}>
+            <div className="w-10 h-10 rounded-full bg-white border border-slate-200 p-0.5 overflow-hidden shadow-soft shrink-0">
               {profile?.avatar_url ? (
                 <img src={profile.avatar_url} alt="" className="w-full h-full object-cover rounded-full" />
               ) : (
@@ -140,27 +169,38 @@ export const DashboardLayout = ({
                 </div>
               )}
             </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-bold text-foreground truncate">
-                {profile?.first_name || 'Member'}
-              </p>
-              <p className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
-                {profile?.is_companion ? 'Verified Companion' : 'Premium Member'}
-              </p>
-            </div>
+            {!isCollapsed && (
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-foreground truncate">
+                  {profile?.first_name || 'Member'}
+                </p>
+                <p className="text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
+                  {profile?.is_companion ? 'Verified Companion' : 'Premium Member'}
+                </p>
+              </div>
+            )}
           </div>
           <button
             onClick={handleSignOut}
-            className="w-full flex items-center gap-3 px-5 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all"
+            className={cn(
+              "w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all",
+              isCollapsed && "justify-center px-2"
+            )}
+            title={isCollapsed ? "Sign Out" : undefined}
           >
-            <LogOut className="w-4 h-4" />
-            Sign Out
+            <LogOut className="w-5 h-5 shrink-0" />
+            {!isCollapsed && "Sign Out"}
           </button>
         </div>
       </aside>
 
       {/* Main Content Area */}
-      <div className="flex-1 lg:ml-72 flex flex-col min-h-screen">
+      <div
+        className={cn(
+          "flex-1 flex flex-col min-h-screen transition-all duration-300",
+          isCollapsed ? "lg:ml-20" : "lg:ml-72"
+        )}
+      >
         {/* Top Header */}
         <header className="sticky top-0 z-30 bg-white/70 backdrop-blur-md border-b border-slate-200/50 h-20 flex items-center px-4 lg:px-10 justify-between">
           <div className="flex items-center gap-4">
