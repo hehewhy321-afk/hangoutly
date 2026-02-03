@@ -81,7 +81,7 @@ export const useCompanions = (filters?: {
         busyCompanionProfileIds.add(booking.companion_id); // companion_id is profile.id
       });
 
-      console.log('Busy users:', busyUserIds.size, 'Busy companions:', busyCompanionProfileIds.size);
+
 
       // Filter on client side for complex filters
       // IMPORTANT: Only show identity-verified and active users on discover page
@@ -96,7 +96,7 @@ export const useCompanions = (filters?: {
           const hasActiveBookingAsUser = busyUserIds.has(item.profile?.user_id);
           const isBusy = hasActiveBookingAsCompanion || hasActiveBookingAsUser;
 
-          console.log('Filtering:', item.profile?.first_name, 'verified:', isVerified, 'active:', isActive, 'busy:', isBusy);
+
           return isVerified && isActive && !isBusy;
         })
         .map((item: any) => {

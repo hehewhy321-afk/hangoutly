@@ -72,7 +72,7 @@ const faqs = [
   },
   {
     question: 'What constitutes an allow-list activity?',
-    answer: 'We facilitate sophisticated, platonic social experiences: dining, arts, intellectual discourse, and professional attendance. Sexual services are strictly forbidden.',
+    answer: 'We facilitate sophisticated, platonic social experiences: dining, arts, intellectual discourse, and professional attendance. provision of unusual activity types or prohibited non-social conduct beyond agreed social activities, or "implicit expectations" is strictly prohibited',
   },
   {
     question: 'Can I elevate to Companion status?',

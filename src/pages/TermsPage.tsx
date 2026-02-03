@@ -90,7 +90,7 @@ const TermsPage = () => {
                 <div>
                   <h3 className="text-xl font-bold text-amber-600 mb-2">Strictly Platonic Platform</h3>
                   <p className="text-amber-700 leading-relaxed font-medium text-sm">
-                    Hangoutly excludes any form of romantic or sexual propositioning. Our community is built on genuine, friendly connections. Violating this core principle results in immediate permanent suspension.
+                    Hangoutly excludes any form of provision of unusual activity types or prohibited non-social conduct beyond agreed social activities, or "implicit expectations" is strictly prohibited. Our community is built on genuine, friendly connections. Violating this core principle results in immediate permanent suspension.
                   </p>
                 </div>
               </div>
