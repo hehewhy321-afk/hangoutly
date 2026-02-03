@@ -116,7 +116,7 @@ const HowItWorksPage = () => {
 
             <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="relative h-[500px] rounded-[3rem] overflow-hidden shadow-2xl">
               <img
-                src="https://images.unsplash.com/photo-1543269865-cbf427effbad"
+                src="https://www.asiapacific.ca/sites/default/files/styles/apf_700/public/Keystone_280.png.jpeg"
                 className="w-full h-full object-cover"
                 alt="Sophisticated Connection"
               />

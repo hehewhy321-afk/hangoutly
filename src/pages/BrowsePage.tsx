@@ -521,27 +521,108 @@ const BrowsePage = () => {
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mt-20 relative rounded-[2rem] bg-gradient-hero p-10 md:p-16 text-center text-white overflow-hidden shadow-deep"
+            className="mt-20 relative rounded-3xl overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 blur-[100px] rounded-full -mr-48 -mt-48" />
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 blur-[100px] rounded-full -ml-48 -mb-48" />
+            {/* Background with glassmorphism */}
+            <div className="absolute inset-0 bg-gradient-to-br from-primary via-violet-600 to-accent" />
+            <div className="absolute inset-0 backdrop-blur-3xl bg-white/5" />
 
-            <div className="relative max-w-2xl mx-auto">
-              <h2 className="text-3xl md:text-4xl font-bold mb-6">Become Part of Our Exclusive Community</h2>
-              <p className="text-lg text-white/90 mb-10 leading-relaxed">
-                Join hundreds of members finding meaningful companionship. Secure, verified, and completely private.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/auth?mode=signup">
-                  <MagneticButton variant="accent" size="lg" className="w-full sm:w-auto">
-                    Create Free Account
-                  </MagneticButton>
-                </Link>
-                <Link to="/how-it-works">
-                  <MagneticButton variant="ghost" size="lg" className="w-full sm:w-auto border border-white/30 text-white hover:bg-white/10">
-                    How it Works
-                  </MagneticButton>
-                </Link>
+            {/* Animated gradient orbs */}
+            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 blur-[120px] rounded-full -mr-48 -mt-48 animate-pulse" />
+            <div className="absolute bottom-0 left-0 w-96 h-96 bg-accent/20 blur-[120px] rounded-full -ml-48 -mb-48 animate-pulse" style={{ animationDelay: '1s' }} />
+
+            {/* Content */}
+            <div className="relative px-8 py-16 md:px-16 md:py-20">
+              <div className="max-w-3xl mx-auto text-center">
+                {/* Badge */}
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 backdrop-blur-md border border-white/20 mb-6"
+                >
+                  <Sparkles className="w-4 h-4 text-white" />
+                  <span className="text-sm font-bold text-white uppercase tracking-wider">Join Our Community</span>
+                </motion.div>
+
+                {/* Heading */}
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 }}
+                  className="text-4xl md:text-5xl font-black text-white mb-6 leading-tight"
+                >
+                  Become Part of Our{' '}
+                  <span className="relative inline-block">
+                    Exclusive Community
+                    <svg className="absolute -bottom-2 left-0 w-full" height="8" viewBox="0 0 200 8" fill="none">
+                      <path d="M0 4C50 1 150 1 200 4" stroke="white" strokeWidth="2" strokeOpacity="0.3" />
+                    </svg>
+                  </span>
+                </motion.h2>
+
+                {/* Description */}
+                <motion.p
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.2 }}
+                  className="text-lg md:text-xl text-white/90 mb-10 leading-relaxed max-w-2xl mx-auto"
+                >
+                  Join hundreds of members finding meaningful companionship. Secure, verified, and completely private.
+                </motion.p>
+
+                {/* CTA Buttons */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  className="flex flex-col sm:flex-row gap-4 justify-center items-center"
+                >
+                  <Link to="/auth?mode=signup">
+                    <MagneticButton
+                      variant="accent"
+                      size="lg"
+                      className="w-full sm:w-auto px-8 py-4 text-base font-bold rounded-2xl shadow-glow-accent bg-white text-primary hover:scale-105 transition-transform"
+                    >
+                      <UserPlus className="w-5 h-5 mr-2" />
+                      Create Free Account
+                    </MagneticButton>
+                  </Link>
+                  <Link to="/how-it-works">
+                    <MagneticButton
+                      variant="ghost"
+                      size="lg"
+                      className="w-full sm:w-auto px-8 py-4 text-base font-bold rounded-2xl border-2 border-white/30 text-white hover:bg-white/10 backdrop-blur-md transition-all"
+                    >
+                      How it Works
+                    </MagneticButton>
+                  </Link>
+                </motion.div>
+
+                {/* Trust indicators */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 }}
+                  className="mt-12 flex flex-wrap items-center justify-center gap-6 text-white/70 text-sm"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-green-400" />
+                    <span>100% Verified Profiles</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-400" />
+                    <span>Secure Payments</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-purple-400" />
+                    <span>24/7 Support</span>
+                  </div>
+                </motion.div>
               </div>
             </div>
           </motion.div>

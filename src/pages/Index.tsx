@@ -1,13 +1,18 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { motion, useInView } from 'framer-motion';
-import { Heart, Shield, Users, Clock, MapPin, ArrowRight, CheckCircle2, Star, Sparkles, TrendingUp } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { motion, useInView, AnimatePresence } from 'framer-motion';
+import { Heart, Shield, Users, Clock, MapPin, ArrowRight, CheckCircle2, Star, Sparkles, TrendingUp, MousePointer2, ChevronDown } from 'lucide-react';
 import { Header } from '@/components/Header';
 import { Link } from 'react-router-dom';
 import { MagneticButton } from '@/components/MagneticButton';
 import { BentoGrid, BentoItem } from '@/components/BentoGrid';
 import { AnimatedCounter } from '@/components/AnimatedCounter';
+import { MagneticCursor } from '@/components/MagneticCursor';
+import { ParticleBackground } from '@/components/ParticleBackground';
+import { FloatingCard } from '@/components/FloatingCard';
+import { RippleButton } from '@/components/RippleButton';
 import { animations } from '@/lib/animations';
 import { SafetyCTA } from '@/components/SafetyCTA';
 
@@ -39,11 +44,11 @@ const features = [
 ];
 
 const activities = [
-  { emoji: '☕', name: 'Coffee Dates', color: 'bg-amber-500/10 border-amber-500/20 text-amber-600' },
+  { emoji: '☕', name: 'Coffee', color: 'bg-amber-500/10 border-amber-500/20 text-amber-600' },
   { emoji: '🎬', name: 'Movies', color: 'bg-red-500/10 border-red-500/20 text-red-600' },
   { emoji: '🥾', name: 'Hiking', color: 'bg-green-500/10 border-green-500/20 text-green-600' },
-  { emoji: '🎭', name: 'Events', color: 'bg-purple-500/10 border-purple-500/20 text-purple-600' },
-  { emoji: '💬', name: 'Conversations', color: 'bg-blue-500/10 border-blue-500/20 text-blue-600' },
+  { emoji: '🎨', name: 'Creative', color: 'bg-purple-500/10 border-purple-500/20 text-purple-600' },
+  { emoji: '💬', name: 'Chat', color: 'bg-blue-500/10 border-blue-500/20 text-blue-600' },
   { emoji: '🍽️', name: 'Dining', color: 'bg-orange-500/10 border-orange-500/20 text-orange-600' },
 ];
 
@@ -76,11 +81,60 @@ const Index = () => {
   const isHeroInView = useInView(heroRef, { once: true });
   const isFeaturesInView = useInView(featuresRef, { once: true });
 
+  const [heroProfile, setHeroProfile] = useState<any>(null);
+  const [activeUserCount, setActiveUserCount] = useState(500); // Default fallback
+
+  // Fetch active user count
+  useEffect(() => {
+    const fetchActiveUserCount = async () => {
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+
+      if (count !== null && count > 0) {
+        setActiveUserCount(count);
+      }
+    };
+
+    fetchActiveUserCount();
+  }, []);
+
+  useEffect(() => {
+    const fetchHeroProfile = async () => {
+      // Fetch a random verified companion
+      const { data } = await supabase
+        .from('profiles')
+        .select(`
+          *,
+          companion_profiles (
+            hourly_rate,
+            gallery_images
+          )
+        `)
+        .eq('is_companion', true)
+        .eq('is_verified', true)
+        .limit(10); // Fetch a few to pick random
+
+      if (data && data.length > 0) {
+        const random = data[Math.floor(Math.random() * data.length)];
+        const companionData = random.companion_profiles?.[0] || {};
+        const profileWithRate = { ...random, ...companionData };
+        setHeroProfile(profileWithRate);
+      }
+    };
+
+    fetchHeroProfile();
+
+    // Subscribe to periodic updates (every 5 mins change hero maybe?)
+    // For now just fetch once on mount
+  }, []);
+
   useEffect(() => {
     if (user && profile && !profile.consent_accepted) {
       navigate('/onboarding');
     }
   }, [user, profile, navigate]);
+
 
   useEffect(() => {
     if (heroRef.current) {
@@ -89,155 +143,257 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground relative">
+      {/* Magnetic Cursor */}
+      <MagneticCursor />
+
       <Header />
 
-      {/* Hero Section with Bento Grid */}
-      <section className="pt-32 pb-20 px-4 overflow-hidden">
-        <div className="container mx-auto max-w-7xl">
+      {/* Hero Section - Immersive 2026 */}
+      <section ref={heroRef} className="relative h-screen flex items-center justify-center px-4 overflow-hidden">
+        {/* Particle Background */}
+        <ParticleBackground />
+
+        {/* Deep Gradient Mesh Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-background to-background" />
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/20 rounded-full blur-[180px] animate-pulse" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-accent/15 rounded-full blur-[180px] animate-pulse" style={{ animationDelay: '2s' }} />
+
+        <div className="container mx-auto max-w-5xl relative z-10 text-center">
           <motion.div
-            ref={heroRef}
-            initial={{ opacity: 0, y: 40 }}
+            initial={{ opacity: 0, y: 30 }}
             animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
-            className="text-center mb-16"
+            transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
+            className="space-y-10"
           >
             {/* Badge */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.8 }}
+              initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 mb-6"
+              className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/5 backdrop-blur-md border border-white/10 shadow-glow-primary/10 mx-auto"
             >
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span className="text-sm font-semibold text-primary">100% Verified Companions</span>
+              <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+              <span className="text-xs font-bold text-foreground/80 uppercase tracking-[0.2em]">Excellence in Companionship</span>
             </motion.div>
 
             {/* Main Heading */}
-            <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-foreground leading-tight mb-6">
-              Find Your Perfect{' '}
-              <span className="text-gradient-primary">Companion</span>
-              <br />
-              for Any Occasion
+            <h1 className="text-6xl md:text-8xl lg:text-[9rem] font-black leading-none tracking-tighter">
+              <motion.span
+                initial={{ opacity: 0, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, filter: 'blur(0px)' }}
+                transition={{ delay: 0.3, duration: 0.8 }}
+                className="block text-foreground mb-2 whitespace-nowrap"
+              >
+                Elevate Every
+              </motion.span>
+              <motion.span
+                initial={{ opacity: 0, filter: 'blur(10px)' }}
+                animate={{ opacity: 1, filter: 'blur(0px)' }}
+                transition={{ delay: 0.5, duration: 0.8 }}
+                className="block bg-gradient-to-r from-primary via-violet-600 to-accent bg-clip-text text-transparent animate-gradient py-4"
+              >
+                Connection
+              </motion.span>
             </h1>
 
-            <p className="text-xl text-muted-foreground mb-10 max-w-3xl mx-auto">
-              Book verified companions for movies, coffee, hiking, or meaningful conversations.
-              Safe, consent-driven, and completely transparent.
-            </p>
+            {/* Subtitle */}
+            <motion.p
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.7, duration: 1 }}
+              className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium"
+            >
+              Experience a new era of curated social companionship.
+              <span className="text-foreground block mt-2">Secure, verified, and designed for the discerning individual.</span>
+            </motion.p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-wrap justify-center gap-4 mb-12">
+            {/* CTA Cluster */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.9 }}
+              className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12"
+            >
               <Link to={user ? '/discover' : '/browse'}>
-                <MagneticButton variant="primary" size="lg">
-                  Find Companions
-                  <ArrowRight className="w-5 h-5" />
-                </MagneticButton>
+                <RippleButton variant="primary" size="lg" className="min-w-[240px] h-16 text-lg rounded-[2rem] shadow-2xl">
+                  Explore Community
+                </RippleButton>
               </Link>
               {!user && (
                 <Link to="/auth">
-                  <MagneticButton variant="secondary" size="lg">
-                    Become a Companion
-                  </MagneticButton>
+                  <RippleButton variant="ghost" size="lg" className="min-w-[240px] h-16 text-lg rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 text-foreground hover:bg-white/10">
+                    Join as Member
+                  </RippleButton>
                 </Link>
               )}
-            </div>
+            </motion.div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center items-center gap-8 text-sm">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span className="font-medium text-muted-foreground">ID Verified</span>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 1.1 }}
+              className="flex flex-wrap justify-center items-center gap-8 pt-4 border-t border-white/5"
+            >
+              <div className="flex items-center gap-2 group">
+                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest group-hover:text-foreground transition-colors">ID Verified</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span className="font-medium text-muted-foreground">Safe Meetings</span>
+              <div className="flex items-center gap-2 group">
+                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ animationDelay: '0.2s' }} />
+                <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest group-hover:text-foreground transition-colors">Safe Meetings</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                <span className="font-medium text-muted-foreground">No Hidden Fees</span>
+              <div className="flex items-center gap-2 group">
+                <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.5)]" style={{ animationDelay: '0.4s' }} />
+                <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest group-hover:text-foreground transition-colors">Zero Hidden Fees</span>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
+        </div>
 
-          {/* Bento Grid */}
-          <BentoGrid columns={4} className="gap-4">
-            {/* Large Featured Card */}
-            <BentoItem span={2} rowSpan={2} className="relative overflow-hidden group">
-              <div className="absolute inset-0">
-                <img
-                  src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=800&fit=crop"
-                  alt="Featured Companion"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              </div>
-              <div className="relative h-full flex flex-col justify-end p-8">
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/90 backdrop-blur-md w-fit mb-4">
-                  <span className="w-2 h-2 bg-white rounded-full animate-pulse" />
-                  <span className="text-sm font-semibold text-white">Online Now</span>
-                </div>
-                <h3 className="text-3xl font-bold text-white mb-2">Priya, 24</h3>
-                <p className="text-white/90 mb-4">Graphic Designer • Kathmandu</p>
-                <div className="flex flex-wrap gap-2 mb-4">
-                  <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-sm">☕ Coffee</span>
-                  <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-sm">🎨 Art</span>
-                  <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-white text-sm">🚶 Walking</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-2xl font-bold text-white">Rs. 500/hr</span>
-                  <Link to={user ? '/discover' : '/browse'}>
-                    <button className="px-6 py-3 rounded-xl bg-white text-primary font-semibold hover:bg-white/90 transition-all">
-                      Book Now
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            </BentoItem>
+        {/* Scroll Indicator */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 1.5, duration: 1 }}
+          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-muted-foreground/50"
+        >
+          <span className="text-[10px] font-bold uppercase tracking-[0.3em] mb-2 text-primary">Scroll To Discover</span>
+          <div className="w-[1px] h-20 bg-gradient-to-b from-primary/50 to-transparent relative overflow-hidden">
+            <motion.div
+              animate={{ y: [0, 80] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+              className="absolute top-0 left-0 w-full h-1/2 bg-primary"
+            />
+          </div>
+        </motion.div>
+      </section>
 
-            {/* Stats Card */}
-            <BentoItem className="bg-gradient-primary text-white">
-              <div className="flex flex-col h-full justify-between">
-                <TrendingUp className="w-8 h-8 mb-4" />
-                <div>
-                  <div className="text-4xl font-bold mb-2">
-                    <AnimatedCounter end={500} suffix="+" />
+      {/* Featured Section - Large Scale Bento */}
+      <section className="py-32 px-4 relative bg-background/50 backdrop-blur-3xl border-t border-white/5">
+        <div className="container mx-auto max-w-7xl">
+          <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
+            <div className="space-y-4">
+              <motion.h2
+                initial={{ opacity: 0, x: -20 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                className="text-4xl md:text-6xl font-black tracking-tight"
+              >
+                Featured <br />Members
+              </motion.h2>
+              <p className="text-muted-foreground text-lg max-w-md">Our most active and top-rated companions, hand-picked for quality.</p>
+            </div>
+            <Link to="/discover">
+              <MagneticButton variant="ghost" className="group flex items-center gap-2 font-bold text-primary">
+                View All Members <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </MagneticButton>
+            </Link>
+          </div>
+
+          <BentoGrid columns={4} className="gap-8">
+            {/* Main Featured Card */}
+            <BentoItem span={2} rowSpan={2} className="p-0 border-0 bg-transparent rounded-[3rem] overflow-hidden group shadow-2xl relative min-h-[600px]">
+              <FloatingCard className="w-full h-full" tiltMaxAngle={3}>
+                <div className="relative w-full h-full">
+                  <img
+                    src="https://ik.imagekit.io/otherhope/she-is-not-real-bro.png?updatedAt=1770133374844"
+                    alt="Featured Companion"
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent" />
+
+                  {/* Card Content Overlay */}
+                  <div className="absolute inset-0 p-10 flex flex-col justify-end text-white">
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-2.5 h-2.5 bg-green-500 rounded-full animate-pulse shadow-[0_0_20px_rgba(34,197,94,0.5)]" />
+                      <span className="text-[10px] font-bold uppercase tracking-widest bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10">Online Now</span>
+                    </div>
+
+                    <h3 className="text-5xl font-black mb-2 leading-none">Priya, 24</h3>
+                    <p className="text-lg text-white/70 mb-8 max-w-sm leading-relaxed">Graphic designer specializing in creative exploration.</p>
+
+                    <div className="flex flex-wrap gap-2 mb-10">
+                      {['Creative', 'Artistic'].map(tag => (
+                        <span key={tag} className="px-5 py-2 rounded-xl bg-white/5 backdrop-blur-lg border border-white/10 text-xs font-black tracking-wide">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-white/10 pt-8">
+                      <div>
+                        <p className="text-white/40 text-[10px] uppercase tracking-[0.2em] font-black mb-1">Session Rate</p>
+                        <span className="text-3xl font-black">Rs. 500<span className="text-lg opacity-40 font-medium ml-1">/hr</span></span>
+                      </div>
+                      <Link to={user ? '/discover' : '/browse'}>
+                        <RippleButton variant="primary" className="px-10 py-5 h-auto rounded-3xl bg-white text-primary font-black shadow-2xl hover:scale-105 transition-transform text-base">
+                          Reserve Now
+                        </RippleButton>
+                      </Link>
+                    </div>
                   </div>
-                  <p className="text-white/90">Happy Users</p>
                 </div>
+              </FloatingCard>
+            </BentoItem>
+
+            {/* User Stats Card (Accent) */}
+            <BentoItem className="bg-gradient-to-br from-primary via-indigo-600 to-violet-600 text-white p-10 flex flex-col justify-between border-0 shadow-2xl rounded-[3rem]">
+              <TrendingUp className="w-12 h-12 mb-6 opacity-30" />
+              <div>
+                <div className="text-7xl font-black mb-2 leading-none">{activeUserCount}+</div>
+                <p className="text-white/70 font-black uppercase tracking-[0.2em] text-xs">Verified Members</p>
               </div>
             </BentoItem>
 
-            {/* Verified Badge */}
-            <BentoItem className="bg-green-500/10">
-              <div className="flex flex-col h-full justify-between">
-                <Shield className="w-8 h-8 text-green-500 mb-4" />
+            {/* Satisfaction Card */}
+            <BentoItem className="bg-white/5 backdrop-blur-md p-10 flex flex-col justify-between border border-white/10 shadow-2xl rounded-[3rem]">
+              <Heart className="w-12 h-12 text-primary mb-6" />
+              <div>
+                <div className="text-6xl font-black mb-2 text-foreground">99%</div>
+                <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-xs">Satisfaction</p>
+              </div>
+            </BentoItem>
+
+            {/* Trust/Excellence Card */}
+            <BentoItem span={2} className="bg-surface-elevated/50 backdrop-blur-md border border-white/5 p-10 shadow-xl rounded-[3rem] flex flex-col justify-center">
+              <div className="flex items-center gap-6">
+                <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center border border-primary/20 flex-shrink-0">
+                  <Star className="w-10 h-10 text-primary" />
+                </div>
                 <div>
-                  <div className="text-4xl font-bold text-green-500 mb-2">100%</div>
-                  <p className="text-green-600 font-medium">ID Verified</p>
+                  <h4 className="text-2xl font-black mb-2">Simply Exceptional</h4>
+                  <p className="text-muted-foreground">Only the top 1% of applicants make it through our rigorous verification process.</p>
                 </div>
-              </div>
-            </BentoItem>
-
-            {/* Activities */}
-            <BentoItem span={2}>
-              <h4 className="text-lg font-bold mb-4">Popular Activities</h4>
-              <div className="grid grid-cols-3 gap-2">
-                {activities.map((activity, i) => (
-                  <motion.div
-                    key={activity.name}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.1 }}
-                    className={`p-3 rounded-xl border ${activity.color} text-center`}
-                  >
-                    <div className="text-2xl mb-1">{activity.emoji}</div>
-                    <div className="text-xs font-medium">{activity.name}</div>
-                  </motion.div>
-                ))}
               </div>
             </BentoItem>
           </BentoGrid>
+        </div>
+      </section>
+
+      {/* Standalone Activities Section */}
+      <section className="py-24 px-4 bg-background relative overflow-hidden">
+        <div className="container mx-auto max-w-7xl relative z-10">
+          <div className="text-center mb-16 space-y-4">
+            <h2 className="text-4xl md:text-6xl font-black tracking-tight">Popular Activities</h2>
+            <p className="text-muted-foreground text-xl max-w-2xl mx-auto">Experience curated companionship tailored to your interests.</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+            {activities.map((activity, i) => (
+              <motion.div
+                key={activity.name}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.1, duration: 0.5 }}
+                viewport={{ once: true }}
+                className={`p-8 rounded-[2.5rem] border ${activity.color} flex flex-col items-center justify-center gap-4 group cursor-pointer hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-2xl hover:bg-white/5`}
+              >
+                <div className="text-4xl group-hover:scale-125 transition-transform duration-500">{activity.emoji}</div>
+                <div className="text-sm font-black uppercase tracking-[0.2em]">{activity.name}</div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -332,8 +488,8 @@ const Index = () => {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl bg-gradient-hero flex items-center justify-center shadow-glow">
-                  <Heart className="w-5 h-5 text-white" fill="white" />
+                <div className="w-10 h-10 rounded-xl overflow-hidden shadow-glow">
+                  <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
                 </div>
                 <span className="text-xl font-bold text-gradient-primary">Hangoutly</span>
               </div>

@@ -211,14 +211,14 @@ const SettingsPage = () => {
                   { key: 'marketingEmails', label: 'Marketing', desc: 'Promotional news and updates' },
                 ].map((item) => (
                   <div key={item.key} className="flex items-center justify-between group">
-                    <div className="max-w-[180px]">
+                    <div className="pr-4">
                       <p className="text-xs font-black text-slate-700 uppercase tracking-tight group-hover:text-primary transition-colors">{item.label}</p>
-                      <p className="text-[9px] font-bold text-slate-400 uppercase leading-none mt-1 tracking-tighter">{item.desc}</p>
+                      <p className="text-[9px] font-bold text-slate-400 uppercase leading-normal mt-1 tracking-tighter max-w-[150px]">{item.desc}</p>
                     </div>
                     <Switch
                       checked={settings[item.key as keyof typeof settings]}
                       onCheckedChange={() => handleToggle(item.key as keyof typeof settings)}
-                      className="data-[state=checked]:bg-primary"
+                      className="data-[state=checked]:bg-primary shrink-0"
                     />
                   </div>
                 ))}
@@ -235,18 +235,18 @@ const SettingsPage = () => {
 
               <div className="space-y-6">
                 <div className="flex items-center justify-between group">
-                  <div className="max-w-[180px]">
+                  <div className="pr-4">
                     <p className="text-xs font-black text-slate-700 uppercase tracking-tight">Profile Visibility</p>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase leading-none mt-1">Allow others to see your profile</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase leading-normal mt-1 max-w-[150px]">Allow others to see your profile</p>
                   </div>
-                  <Switch checked={settings.profileVisible} onCheckedChange={() => handleToggle('profileVisible')} />
+                  <Switch checked={settings.profileVisible} onCheckedChange={() => handleToggle('profileVisible')} className="shrink-0" />
                 </div>
                 <div className="flex items-center justify-between group">
-                  <div className="max-w-[180px]">
+                  <div className="pr-4">
                     <p className="text-xs font-black text-slate-700 uppercase tracking-tight">Online Status</p>
-                    <p className="text-[9px] font-bold text-slate-400 uppercase leading-none mt-1">Show when you are online</p>
+                    <p className="text-[9px] font-bold text-slate-400 uppercase leading-normal mt-1 max-w-[150px]">Show when you are online</p>
                   </div>
-                  <Switch checked={profile?.is_online || false} onCheckedChange={handleToggleOnlineStatus} className="data-[state=checked]:bg-emerald-500" />
+                  <Switch checked={profile?.is_online || false} onCheckedChange={handleToggleOnlineStatus} className="data-[state=checked]:bg-emerald-500 shrink-0" />
                 </div>
               </div>
             </div>

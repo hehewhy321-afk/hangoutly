@@ -21,7 +21,7 @@ interface ProfileDetailProps {
   bookButtonLabel?: string;
 }
 
-export const ProfileDetail = ({ isOpen, onClose, profile, onBook, bookButtonLabel = 'Book This Companion' }: ProfileDetailProps) => {
+export const ProfileDetail = ({ isOpen, onClose, profile, onBook, bookButtonLabel = 'Book Companion' }: ProfileDetailProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [showReportModal, setShowReportModal] = useState(false);

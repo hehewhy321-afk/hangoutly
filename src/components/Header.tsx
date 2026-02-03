@@ -55,7 +55,7 @@ export const Header = () => {
           isScrolled ? 'py-2' : 'py-4'
         )}
       >
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 max-w-7xl">
           <motion.div
             className={cn(
               'relative overflow-hidden rounded-2xl',
@@ -69,32 +69,41 @@ export const Header = () => {
               backdropFilter: `blur(${headerBlur}px) saturate(180%)`,
             }}
           >
-            <div className="px-6 py-4 flex items-center justify-between">
-              {/* Logo */}
-              <Link to="/" className="flex items-center gap-3 group">
+            {/* Desktop Layout */}
+            <div className="hidden md:grid grid-cols-3 items-center px-8 py-4 gap-8">
+              {/* Left - Logo */}
+              <Link to="/" className="flex items-center gap-3 group justify-start">
                 <motion.div
                   ref={logoRef}
-                  className="relative w-11 h-11 rounded-xl bg-gradient-hero flex items-center justify-center shadow-glow"
-                  whileHover={{ scale: 1.05 }}
+                  className="relative w-12 h-12 rounded-xl overflow-hidden shadow-glow ring-2 ring-primary/10 group-hover:ring-primary/30 transition-all"
+                  whileHover={{ scale: 1.08, rotate: 5 }}
                   whileTap={{ scale: 0.95 }}
                 >
-                  <Heart className="w-5 h-5 text-white" fill="white" />
-                  <div className="absolute inset-0 rounded-xl bg-gradient-hero opacity-0 group-hover:opacity-100 blur-xl transition-opacity" />
+                  <img
+                    src="/logo.png"
+                    alt="Hangoutly"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-gradient-primary opacity-0 group-hover:opacity-10 transition-opacity" />
                 </motion.div>
-                <span className="text-xl font-bold text-gradient-primary">
-                  Hangoutly
-                </span>
+                <div className="flex flex-col">
+                  <span className="text-xl font-black text-gradient-primary leading-none tracking-tight">
+                    Hangoutly
+                  </span>
+                  <span className="text-[9px] font-bold text-muted-foreground tracking-[0.25em] uppercase">
+                    Connect
+                  </span>
+                </div>
               </Link>
 
-              {/* Desktop Navigation */}
-              <nav className="hidden md:flex items-center gap-8">
+              {/* Center - Navigation */}
+              <nav className="flex items-center gap-6 justify-center">
                 {navLinks.map((link) => (
                   <Link
                     key={link.path}
                     to={link.path}
                     className={cn(
-                      'text-sm font-medium transition-all duration-200 relative',
-                      'hover:-translate-y-0.5',
+                      'text-sm font-semibold transition-all duration-200 relative group',
                       isActive(link.path)
                         ? 'text-primary'
                         : 'text-muted-foreground hover:text-foreground'
@@ -108,33 +117,61 @@ export const Header = () => {
                         transition={{ type: 'spring', stiffness: 380, damping: 30 }}
                       />
                     )}
+                    <div className="absolute inset-0 -z-10 bg-primary/5 rounded-lg scale-0 group-hover:scale-100 transition-transform" />
                   </Link>
                 ))}
               </nav>
 
-              {user ? (
-                <>
-                  <Link to={isAdmin ? '/admin' : profile?.is_companion ? '/companion' : '/dashboard'}>
-                    <Button variant="ghost" className="rounded-xl flex items-center justify-center gap-2">
-                      <User className="w-4 h-4" />
-                      Dashboard
-                    </Button>
+              {/* Right - Actions */}
+              <div className="flex items-center gap-4 justify-end">
+                {user ? (
+                  <div className="flex items-center gap-3">
+                    <NotificationsDropdown />
+                    <Link to={isAdmin ? '/admin' : profile?.is_companion ? '/companion-dashboard' : '/discover'}>
+                      <Button variant="ghost" size="sm" className="rounded-xl font-semibold">
+                        <User className="w-4 h-4 mr-2" />
+                        Dashboard
+                      </Button>
+                    </Link>
+                  </div>
+                ) : (
+                  <Link to="/auth">
+                    <MagneticButton variant="primary" size="sm" className="rounded-xl font-semibold shadow-glow-primary">
+                      <Heart className="w-4 h-4 mr-2" />
+                      Get Started
+                    </MagneticButton>
                   </Link>
-                  <NotificationsDropdown />
-                </>
-              ) : (
-                <Link to="/auth">
-                  <MagneticButton variant="primary" size="sm" className="flex items-center justify-center gap-2">
-                    <Heart className="w-4 h-4" />
-                    Sign In
-                  </MagneticButton>
-                </Link>
-              )}
+                )}
+              </div>
+            </div>
 
-              {/* Mobile Menu Toggle */}
-              <div className="flex md:hidden items-center">
+            {/* Mobile Layout */}
+            <div className="md:hidden px-6 py-4 flex items-center justify-between">
+              <Link to="/" className="flex items-center gap-2.5 group">
+                <motion.div
+                  className="relative w-10 h-10 rounded-xl overflow-hidden shadow-glow"
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <img
+                    src="/logo.png"
+                    alt="Hangoutly"
+                    className="w-full h-full object-cover"
+                  />
+                </motion.div>
+                <div className="flex flex-col">
+                  <span className="text-lg font-black text-gradient-primary leading-none">
+                    Hangoutly
+                  </span>
+                  <span className="text-[8px] font-bold text-muted-foreground tracking-[0.2em] uppercase">
+                    Connect
+                  </span>
+                </div>
+              </Link>
+
+              <div className="flex items-center gap-2">
+                {user && <NotificationsDropdown />}
                 <motion.button
-                  className="p-2 rounded-xl hover:bg-secondary/50 transition-colors"
+                  className="p-2.5 rounded-xl hover:bg-secondary/50 transition-colors"
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   whileTap={{ scale: 0.95 }}
                 >

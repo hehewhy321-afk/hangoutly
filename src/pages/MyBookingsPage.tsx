@@ -287,55 +287,55 @@ const MyBookingsPage = () => {
                           <div className={cn("absolute top-0 left-0 w-1.5 h-full", status.color.replace('text-', 'bg-'))} />
 
                           {/* Companion Info */}
-                          <div className="flex items-center gap-6 min-w-[280px]">
-                            <div className="w-20 h-20 rounded-[1.8rem] bg-slate-100 overflow-hidden shadow-lg flex-shrink-0 group-hover:scale-110 transition-transform">
+                          <div className="flex items-center gap-5 w-full lg:w-auto lg:min-w-[280px]">
+                            <div className="w-16 h-16 lg:w-20 lg:h-20 rounded-[1.8rem] bg-slate-100 overflow-hidden shadow-lg flex-shrink-0 group-hover:scale-105 transition-transform">
                               <img src={booking.companion?.avatar_url || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330'} alt="" className="w-full h-full object-cover" />
                             </div>
                             <div>
-                              <h3 className="text-2xl font-black text-slate-800 tracking-tighter mb-1">{booking.companion?.first_name}</h3>
-                              <div className={cn("inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[10px] font-black uppercase tracking-[0.15em]", status.bg, status.color, status.color.replace('text-', 'border-').replace('500', '200'))}>
-                                <status.icon className="w-3.5 h-3.5" />
+                              <h3 className="text-xl lg:text-2xl font-black text-slate-800 tracking-tighter mb-1.5">{booking.companion?.first_name}</h3>
+                              <div className={cn("inline-flex items-center gap-2 px-3 py-1 rounded-full border text-[9px] font-black uppercase tracking-[0.15em]", status.bg, status.color, status.color.replace('text-', 'border-').replace('500', '200'))}>
+                                <status.icon className="w-3 h-3" />
                                 {status.label}
                               </div>
                             </div>
                           </div>
 
                           {/* Details Bento */}
-                          <div className="flex-1 grid grid-cols-2 md:grid-cols-4 gap-6 w-full">
-                            <div className="space-y-1">
-                              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Date & Era</p>
+                          <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-y-6 gap-x-4 w-full">
+                            <div className="space-y-1.5">
+                              <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Date</p>
                               <p className="text-sm font-black text-slate-700 tracking-tight">{format(new Date(booking.booking_date), 'MMM d, yyyy')}</p>
                             </div>
-                            <div className="space-y-1">
-                              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Chronos</p>
+                            <div className="space-y-1.5">
+                              <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Duration</p>
                               <p className="text-sm font-black text-slate-700 tracking-tight">{booking.start_time} • {booking.duration_hours}h</p>
                             </div>
-                            <div className="space-y-1">
-                              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Enactment</p>
+                            <div className="space-y-1.5">
+                              <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Activity</p>
                               <div className="flex items-center gap-1.5">
                                 <div className="w-1.5 h-1.5 rounded-full bg-primary" />
-                                <span className="text-sm font-black text-slate-700 tracking-tight">{booking.activity}</span>
+                                <span className="text-sm font-black text-slate-700 tracking-tight truncate">{booking.activity}</span>
                               </div>
                             </div>
-                            <div className="space-y-1">
-                              <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Exchange</p>
+                            <div className="space-y-1.5">
+                              <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest">Total</p>
                               <p className="text-lg font-black text-slate-900 tracking-tighter">Rs. {booking.total_amount}</p>
                             </div>
                           </div>
 
                           {/* Actions Container */}
-                          <div className="flex items-center gap-4 w-full lg:w-auto pt-6 lg:pt-0 border-t lg:border-t-0 border-slate-100 justify-end">
+                          <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 w-full lg:w-auto pt-6 lg:pt-0 border-t lg:border-t-0 border-slate-100 justify-end">
                             {canChat(booking) && (
-                              <Button variant="ghost" onClick={() => { setSelectedBooking(booking); setShowChat(true); }} className="h-12 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-black uppercase text-[10px] tracking-widest px-8 shadow-glow-primary">
+                              <Button variant="ghost" onClick={() => { setSelectedBooking(booking); setShowChat(true); }} className="h-11 lg:h-12 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-black uppercase text-[10px] tracking-widest px-6 shadow-glow-primary w-full sm:w-auto">
                                 <MessageCircle className="w-4 h-4 mr-2" />
-                                Chat UI
+                                Chat
                               </Button>
                             )}
 
                             {booking.payment_status === 'requested' && (
-                              <MagneticButton onClick={() => { setSelectedBooking(booking); setShowPayment(true); }} className="h-12 rounded-2xl font-black uppercase text-[10px] tracking-widest px-8 shadow-glow-accent">
+                              <MagneticButton onClick={() => { setSelectedBooking(booking); setShowPayment(true); }} className="h-11 lg:h-12 rounded-xl font-black uppercase text-[10px] tracking-widest px-6 shadow-glow-accent w-full sm:w-auto">
                                 <CreditCard className="w-4 h-4 mr-2" />
-                                Settle
+                                Pay
                               </MagneticButton>
                             )}
 

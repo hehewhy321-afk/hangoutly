@@ -220,7 +220,7 @@ export const FilterSheet = ({ isOpen, onClose, filters, onApply }: FilterSheetPr
 
             {/* Footer */}
             <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border bg-background">
-              <Button variant="warm" onClick={handleApply} className="w-full" size="lg">
+              <Button variant="warm" onClick={handleApply} className="w-full" size="xl">
                 Apply Filters
               </Button>
             </div>

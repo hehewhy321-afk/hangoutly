@@ -68,6 +68,7 @@ const DiscoverPage = () => {
     ageRange: [18, 50],
     onlineOnly: false,
   });
+  const [quickFilter, setQuickFilter] = useState<'all' | 'nearby' | 'new'>('all');
 
   const { user, profile: userProfile } = useAuth();
   const { toast } = useToast();
@@ -518,9 +519,51 @@ const DiscoverPage = () => {
           </div>
 
           <div className="flex items-center gap-2 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
-            <Button variant="ghost" size="sm" className="rounded-lg font-bold text-primary bg-primary/5">All</Button>
-            <Button variant="ghost" size="sm" className="rounded-lg font-bold text-muted-foreground">Nearby</Button>
-            <Button variant="ghost" size="sm" className="rounded-lg font-bold text-muted-foreground">New</Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setQuickFilter('all')}
+              className={cn(
+                "rounded-lg font-bold transition-all",
+                quickFilter === 'all'
+                  ? "text-primary bg-primary/5"
+                  : "text-muted-foreground hover:text-foreground hover:bg-slate-50"
+              )}
+            >
+              All
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setQuickFilter('nearby');
+                if (userProfile?.city) {
+                  setSelectedCity(userProfile.city);
+                  setFilters(prev => ({ ...prev, city: userProfile.city }));
+                }
+              }}
+              className={cn(
+                "rounded-lg font-bold transition-all",
+                quickFilter === 'nearby'
+                  ? "text-primary bg-primary/5"
+                  : "text-muted-foreground hover:text-foreground hover:bg-slate-50"
+              )}
+            >
+              Nearby
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setQuickFilter('new')}
+              className={cn(
+                "rounded-lg font-bold transition-all",
+                quickFilter === 'new'
+                  ? "text-primary bg-primary/5"
+                  : "text-muted-foreground hover:text-foreground hover:bg-slate-50"
+              )}
+            >
+              New
+            </Button>
           </div>
         </div>
 
