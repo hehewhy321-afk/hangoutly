@@ -17,7 +17,7 @@ const steps = [
     title: 'Create Account',
     description: 'Sign up and verify your identity. All companions undergo thorough verification.',
     color: 'bg-indigo-500',
-    tag: 'Authentication'
+    tag: 'Safety Check'
   },
   {
     number: 2,
@@ -64,7 +64,7 @@ const steps = [
 const faqs = [
   {
     question: 'Is the platform identity-secure?',
-    answer: 'Absolutely. Every companion profile requires government-issued authentication and biometric verification before network activation.',
+    answer: 'Absolutely. Every companion profile requires government-issued authentication and identity verification before profile activation.',
   },
   {
     question: 'How are asset exchanges managed?',
@@ -76,7 +76,7 @@ const faqs = [
   },
   {
     question: 'Can I elevate to Companion status?',
-    answer: 'Yes. Any registered node can apply for elevations and activate companion protocols after thorough identity vetting.',
+    answer: 'Yes. Any registered user can apply for elevations and activate companion protocols after thorough identity vetting.',
   },
 ];
 

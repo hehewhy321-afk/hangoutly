@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { MagneticButton } from '@/components/MagneticButton';
+import { ACTIVITIES } from '@/types';
 
 const ProfilePage = () => {
   const { user, profile, isLoading: authLoading, refreshProfile } = useAuth();
@@ -36,6 +37,7 @@ const ProfilePage = () => {
     profession: '',
     bio: '',
     hourly_rate: 0,
+    activities: [] as string[],
   });
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
@@ -59,7 +61,8 @@ const ProfilePage = () => {
         area: profile.area || '',
         profession: profile.profession || '',
         bio: profile.bio || '',
-        hourly_rate: 0, // Default, will be updated by fetchCompanionData
+        hourly_rate: 0,
+        activities: [],
       });
 
       // Fetch Cities
@@ -77,13 +80,17 @@ const ProfilePage = () => {
       const fetchCompanionData = async () => {
         const { data, error } = await supabase
           .from('companion_profiles')
-          .select('gallery_images, hourly_rate')
+          .select('gallery_images, hourly_rate, activities')
           .eq('profile_id', profile.id)
           .maybeSingle();
 
         if (data) {
           setGalleryImages(data.gallery_images || []);
-          setFormData(prev => ({ ...prev, hourly_rate: data.hourly_rate || 0 }));
+          setFormData(prev => ({
+            ...prev,
+            hourly_rate: data.hourly_rate || 0,
+            activities: data.activities || []
+          }));
         }
       };
 
@@ -180,7 +187,7 @@ const ProfilePage = () => {
         avatarUrl = urlData.publicUrl;
       }
 
-      const { hourly_rate, ...profileData } = formData;
+      const { hourly_rate, activities, ...profileData } = formData;
       const { error } = await supabase
         .from('profiles')
         .update({ ...profileData, avatar_url: avatarUrl })
@@ -191,7 +198,10 @@ const ProfilePage = () => {
       if (profile?.is_companion) {
         const { error: companionError } = await supabase
           .from('companion_profiles')
-          .update({ hourly_rate: formData.hourly_rate })
+          .update({
+            hourly_rate: formData.hourly_rate,
+            activities: formData.activities
+          })
           .eq('profile_id', profile.id);
 
         if (companionError) throw companionError;
@@ -506,7 +516,6 @@ const ProfilePage = () => {
                     )}
                   </div>
                 )}
-
                 <div className="space-y-3">
                   <Label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Bio</Label>
                   {isEditing ? (
@@ -523,85 +532,131 @@ const ProfilePage = () => {
                   )}
                 </div>
               </div>
-            </div>
 
-            {/* Gallery Section - Only show if editing or has images */}
-            {(isEditing || galleryImages.length > 0) && (
-              <div className="glass-card p-8 lg:p-10 border border-slate-200/60 shadow-xl">
-                <div className="flex items-center justify-between mb-8">
-                  <div className="flex items-center gap-3">
-                    <ImageIcon className="w-6 h-6 text-purple-500" />
-                    <h3 className="text-lg font-black text-slate-800 uppercase tracking-tighter">My Gallery</h3>
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                  <Label className="text-xs font-black uppercase tracking-widest text-slate-400">Activities I'm down for</Label>
+                </div>
+
+                {isEditing ? (
+                  <div className="flex flex-wrap gap-2 p-6 rounded-[2rem] bg-slate-50 border border-slate-100">
+                    {ACTIVITIES.map((activity) => {
+                      const isSelected = formData.activities.includes(activity);
+                      return (
+                        <button
+                          key={activity}
+                          onClick={() => {
+                            const newActivities = isSelected
+                              ? formData.activities.filter(a => a !== activity)
+                              : [...formData.activities, activity];
+                            setFormData({ ...formData, activities: newActivities });
+                          }}
+                          className={cn(
+                            "px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all border",
+                            isSelected
+                              ? "bg-primary text-white border-primary shadow-lg shadow-primary/20 scale-105"
+                              : "bg-white text-slate-400 border-slate-100 hover:border-primary/30 hover:text-slate-600"
+                          )}
+                        >
+                          {activity}
+                        </button>
+                      );
+                    })}
                   </div>
-                  {isEditing && (
-                    <div className="px-2 py-1 rounded bg-purple-100 text-[9px] font-black text-purple-600 uppercase tracking-widest">
-                      {galleryImages.length}/3 Images
-                    </div>
-                  )}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {galleryImages.map((img, index) => (
-                    <div key={index} className="relative aspect-[3/4] group rounded-2xl overflow-hidden bg-slate-100 shadow-sm border border-slate-200/50">
-                      <img src={img} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-
-                      {isEditing && (
-                        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                          <Button
-                            variant="destructive"
-                            size="icon"
-                            onClick={() => handleRemoveGalleryImage(index)}
-                            className="rounded-full h-10 w-10 shadow-lg hover:scale-110 transition-transform"
-                          >
-                            <Trash2 className="w-5 h-5" />
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  {isEditing && galleryImages.length < 3 && (
-                    <div
-                      onClick={() => galleryInputRef.current?.click()}
-                      className="aspect-[3/4] rounded-2xl border-2 border-dashed border-slate-200 hover:border-purple-400 bg-slate-50 hover:bg-purple-50/50 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 group"
-                    >
-                      <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                        {uploadingGallery ? <Loader2 className="w-5 h-5 animate-spin text-purple-500" /> : <Plus className="w-5 h-5 text-purple-500" />}
-                      </div>
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-widest group-hover:text-purple-500 transition-colors">Add Photo</span>
-                    </div>
-                  )}
-                  <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleGalleryUpload} />
-                </div>
-              </div>
-            )}
-
-            {/* Badges & Influence Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="glass-card p-8 border border-slate-200/60 shadow-xl flex flex-col items-center justify-center gap-4 text-center">
-                <div className="w-16 h-16 rounded-3xl bg-indigo-50 flex items-center justify-center shadow-sm">
-                  <Star className="w-8 h-8 text-indigo-500 fill-indigo-500" />
-                </div>
-                <div>
-                  <h4 className="text-xl font-black text-slate-800 tracking-tight">Elite Tier</h4>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Experience Tier</p>
-                </div>
-              </div>
-
-              <div className="glass-card p-8 border border-slate-200/60 shadow-xl flex flex-col items-center justify-center gap-4 text-center">
-                <div className="w-16 h-16 rounded-3xl bg-rose-50 flex items-center justify-center shadow-sm">
-                  <Heart className="w-8 h-8 text-rose-500 fill-rose-500" />
-                </div>
-                <div>
-                  <h4 className="text-xl font-black text-slate-800 tracking-tight">High Resonance</h4>
-                  <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Positive Ratings</p>
-                </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {formData.activities.length > 0 ? (
+                      formData.activities.map((activity) => (
+                        <span key={activity} className="px-5 py-2.5 rounded-xl bg-primary/5 text-primary text-xs font-black uppercase tracking-widest border border-primary/10">
+                          {activity}
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-sm font-bold text-slate-400 italic ml-1">No activities selected yet.</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>
+
+          {/* Gallery Section - Only show if editing or has images */}
+          {(isEditing || galleryImages.length > 0) && (
+            <div className="glass-card p-8 lg:p-10 border border-slate-200/60 shadow-xl">
+              <div className="flex items-center justify-between mb-8">
+                <div className="flex items-center gap-3">
+                  <ImageIcon className="w-6 h-6 text-purple-500" />
+                  <h3 className="text-lg font-black text-slate-800 uppercase tracking-tighter">My Gallery</h3>
+                </div>
+                {isEditing && (
+                  <div className="px-2 py-1 rounded bg-purple-100 text-[9px] font-black text-purple-600 uppercase tracking-widest">
+                    {galleryImages.length}/3 Images
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {galleryImages.map((img, index) => (
+                  <div key={index} className="relative aspect-[3/4] group rounded-2xl overflow-hidden bg-slate-100 shadow-sm border border-slate-200/50">
+                    <img src={img} alt={`Gallery ${index + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+
+                    {isEditing && (
+                      <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          onClick={() => handleRemoveGalleryImage(index)}
+                          className="rounded-full h-10 w-10 shadow-lg hover:scale-110 transition-transform"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                ))}
+
+                {isEditing && galleryImages.length < 3 && (
+                  <div
+                    onClick={() => galleryInputRef.current?.click()}
+                    className="aspect-[3/4] rounded-2xl border-2 border-dashed border-slate-200 hover:border-purple-400 bg-slate-50 hover:bg-purple-50/50 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 group"
+                  >
+                    <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center group-hover:scale-110 transition-transform">
+                      {uploadingGallery ? <Loader2 className="w-5 h-5 animate-spin text-purple-500" /> : <Plus className="w-5 h-5 text-purple-500" />}
+                    </div>
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest group-hover:text-purple-500 transition-colors">Add Photo</span>
+                  </div>
+                )}
+                <input ref={galleryInputRef} type="file" accept="image/*" className="hidden" onChange={handleGalleryUpload} />
+              </div>
+            </div>
+          )}
+
+          {/* Badges & Influence Section */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="glass-card p-8 border border-slate-200/60 shadow-xl flex flex-col items-center justify-center gap-4 text-center">
+              <div className="w-16 h-16 rounded-3xl bg-indigo-50 flex items-center justify-center shadow-sm">
+                <Star className="w-8 h-8 text-indigo-500 fill-indigo-500" />
+              </div>
+              <div>
+                <h4 className="text-xl font-black text-slate-800 tracking-tight">Elite Tier</h4>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Experience Tier</p>
+              </div>
+            </div>
+
+            <div className="glass-card p-8 border border-slate-200/60 shadow-xl flex flex-col items-center justify-center gap-4 text-center">
+              <div className="w-16 h-16 rounded-3xl bg-rose-50 flex items-center justify-center shadow-sm">
+                <Heart className="w-8 h-8 text-rose-500 fill-rose-500" />
+              </div>
+              <div>
+                <h4 className="text-xl font-black text-slate-800 tracking-tight">High Resonance</h4>
+                <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">Positive Ratings</p>
+              </div>
+            </div>
+          </div>
         </div>
       </motion.div>
-    </DashboardLayout>
+    </DashboardLayout >
   );
 };
 

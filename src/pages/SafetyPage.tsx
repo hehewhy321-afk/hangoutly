@@ -21,7 +21,7 @@ const safetyTips = [
     icon: Phone,
     title: 'Tell Someone You Trust',
     description: 'Share your meeting location and expected duration with a friend or family member.',
-    tag: 'Communication'
+    tag: 'Safety'
   },
   {
     icon: Activity,

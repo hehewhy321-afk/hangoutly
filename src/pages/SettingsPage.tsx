@@ -5,7 +5,7 @@ import {
   Bell, Lock, Eye, Shield,
   Trash2, LogOut, Loader2, Check, ShieldCheck, AlertCircle,
   Clock, ChevronRight, BadgeCheck, Zap, Globe, Smartphone,
-  UserX, Key, Mail, Fingerprint, Sparkles, ArrowRight
+  UserX, Key, Mail, ShieldCheck as ShieldIcon, Sparkles, ArrowRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -148,7 +148,7 @@ const SettingsPage = () => {
         {/* Verification Status Banner Overlay */}
         <motion.div variants={itemVariants} className="relative group overflow-hidden rounded-[2.5rem] bg-slate-900 shadow-2xl p-8 lg:p-12 text-white">
           <div className="absolute top-0 right-0 p-12 opacity-10 pointer-events-none text-white focus-within:opacity-20 transition-opacity">
-            <Fingerprint className="w-64 h-64" />
+            <ShieldIcon className="w-64 h-64" />
           </div>
 
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">

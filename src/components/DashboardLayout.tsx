@@ -55,6 +55,11 @@ export const DashboardLayout = ({
 
   const navItems = [
     {
+      path: '/dashboard',
+      icon: LayoutDashboard,
+      label: 'Dashboard'
+    },
+    {
       path: '/discover',
       icon: Compass,
       label: 'Discover'
@@ -64,11 +69,6 @@ export const DashboardLayout = ({
       icon: Calendar,
       label: 'My Bookings'
     },
-    ...(profile?.is_companion ? [{
-      path: '/companion-dashboard',
-      icon: LayoutDashboard,
-      label: 'Companion Dashboard'
-    }] : []),
     {
       path: '/profile',
       icon: User,

@@ -24,6 +24,7 @@ import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
 import ContactPage from "./pages/ContactPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
+import UserDashboard from "./pages/UserDashboard";
 import NotFound from "./pages/NotFound";
 import { SmoothScrollProvider } from '@/components/SmoothScrollProvider';
 
@@ -68,6 +69,14 @@ function App() {
                   element={
                     <ProtectedRoute>
                       <DiscoverPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/user-dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <UserDashboard />
                     </ProtectedRoute>
                   }
                 />

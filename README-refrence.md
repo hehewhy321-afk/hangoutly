@@ -149,7 +149,6 @@ Based on **[pH7Framework](https://github.com/pH7Software/pH7-Social-Dating-CMS/t
 * Powerful Anti-Spam System (and detects duplicate contents) powered by the Invisible Intelligent Spam Detection System™
 * pCO8 SECURITY pH7Framework™ (offers one of the highest protection for your webapp)
 * Full Security system against XSS, CSRF, SQL injection, authentication hacking, session fixation, brute-force, reverse tabnabbing phishing attacks, ... and can even prevent some DDoS attacks!
-* Two-Factor Authentication (2FA). With it, your website's admins, affiliates, users won't never be hacked again or got their accounts stolen thanks to a verification token sent on the user's mobile device
 * Progressive Web App (PWA) support (requires HTTPS)
 * Admin Panel - Block Access with IP Restriction
 * Beautiful Code: Very thoroughly commented about what's happening throughout the PHP code, beautiful indentation and very readable, even for non-programmers
