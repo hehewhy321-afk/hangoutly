@@ -19,6 +19,12 @@ import VerificationPage from "./pages/VerificationPage";
 import CompanionDashboard from "./pages/CompanionDashboard";
 import DashboardPage from "./pages/DashboardPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsersPage from "./pages/admin/AdminUsersPage";
+import AdminVerificationsPage from "./pages/admin/AdminVerificationsPage";
+import AdminReportsPage from "./pages/admin/AdminReportsPage";
+import AdminCitiesPage from "./pages/admin/AdminCitiesPage";
+import AdminSettingsPage from "./pages/admin/AdminSettingsPage";
+import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
 import SafetyPage from "./pages/SafetyPage";
 import PrivacyPage from "./pages/PrivacyPage";
 import TermsPage from "./pages/TermsPage";
@@ -29,6 +35,7 @@ import NotFound from "./pages/NotFound";
 import { SmoothScrollProvider } from '@/components/SmoothScrollProvider';
 
 import { CustomCursor } from "@/components/CustomCursor";
+import { ScrollToTop } from "@/components/ScrollToTop";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +49,7 @@ function App() {
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <ScrollToTop />
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />
@@ -153,10 +161,66 @@ function App() {
                   }
                 />
                 <Route
-                  path="/admin/*"
+                  path="/admin"
                   element={
                     <ProtectedRoute requireAdmin>
                       <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/users"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminUsersPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/verifications"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminVerificationsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/reports"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminReportsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/cities"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminCitiesPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/settings"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminSettingsPage />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/analytics"
+                  element={
+                    <ProtectedRoute requireAdmin>
+                      <AdminAnalyticsPage />
                     </ProtectedRoute>
                   }
                 />
