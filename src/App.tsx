@@ -36,6 +36,8 @@ import { SmoothScrollProvider } from '@/components/SmoothScrollProvider';
 
 import { CustomCursor } from "@/components/CustomCursor";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { GlobalBanner } from "@/components/GlobalBanner";
+import { AutoUpdateHandler } from '@/components/AutoUpdateHandler';
 
 const queryClient = new QueryClient();
 
@@ -45,11 +47,13 @@ function App() {
       <AuthProvider>
         <QueryClientProvider client={queryClient}>
           <TooltipProvider>
+            <GlobalBanner />
             <CustomCursor />
             <Toaster />
             <Sonner />
             <BrowserRouter>
               <ScrollToTop />
+              <AutoUpdateHandler />
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<Index />} />

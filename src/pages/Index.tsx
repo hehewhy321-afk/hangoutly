@@ -15,6 +15,7 @@ import { FloatingCard } from '@/components/FloatingCard';
 import { RippleButton } from '@/components/RippleButton';
 import { animations } from '@/lib/animations';
 import { SafetyCTA } from '@/components/SafetyCTA';
+import { Footer } from '@/components/Footer';
 
 const features = [
   {
@@ -178,12 +179,12 @@ const Index = () => {
             </motion.div>
 
             {/* Main Heading */}
-            <h1 className="text-6xl md:text-8xl lg:text-[9rem] font-black leading-none tracking-tighter">
+            <h1 className="text-[2.75rem] sm:text-7xl md:text-8xl lg:text-[9rem] font-black leading-[0.95] tracking-tighter mix-blend-lighten">
               <motion.span
                 initial={{ opacity: 0, filter: 'blur(10px)' }}
                 animate={{ opacity: 1, filter: 'blur(0px)' }}
                 transition={{ delay: 0.3, duration: 0.8 }}
-                className="block text-foreground mb-2 whitespace-nowrap"
+                className="block text-foreground mb-1 sm:mb-2 sm:whitespace-nowrap"
               >
                 Elevate Every
               </motion.span>
@@ -191,7 +192,7 @@ const Index = () => {
                 initial={{ opacity: 0, filter: 'blur(10px)' }}
                 animate={{ opacity: 1, filter: 'blur(0px)' }}
                 transition={{ delay: 0.5, duration: 0.8 }}
-                className="block bg-gradient-to-r from-primary via-violet-600 to-accent bg-clip-text text-transparent animate-gradient py-4"
+                className="block bg-gradient-to-r from-primary via-violet-600 to-accent bg-clip-text text-transparent animate-gradient py-1 md:py-4"
               >
                 Connection
               </motion.span>
@@ -202,7 +203,7 @@ const Index = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7, duration: 1 }}
-              className="text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium"
+              className="text-base md:text-2xl text-muted-foreground leading-relaxed max-w-xl mx-auto font-medium px-4 md:px-0"
             >
               Experience a new era of curated social companionship.
               <span className="text-foreground block mt-2">Secure, verified, and designed for the discerning individual.</span>
@@ -213,16 +214,16 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.9 }}
-              className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12"
+              className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center items-center mb-8 md:mb-12 w-full px-6 md:px-0"
             >
-              <Link to={user ? '/discover' : '/browse'}>
-                <RippleButton variant="primary" size="lg" className="min-w-[240px] h-16 text-lg rounded-[2rem] shadow-2xl">
+              <Link to={user ? '/discover' : '/browse'} className="w-full sm:w-auto">
+                <RippleButton variant="primary" size="lg" className="w-full sm:min-w-[200px] md:min-w-[240px] h-14 md:h-16 text-base md:text-lg rounded-2xl md:rounded-[2rem] shadow-2xl font-bold">
                   Explore Community
                 </RippleButton>
               </Link>
               {!user && (
-                <Link to="/auth">
-                  <RippleButton variant="ghost" size="lg" className="min-w-[240px] h-16 text-lg rounded-[2rem] bg-white/5 backdrop-blur-md border border-white/10 text-foreground hover:bg-white/10">
+                <Link to="/auth" className="w-full sm:w-auto">
+                  <RippleButton variant="ghost" size="lg" className="w-full sm:min-w-[200px] md:min-w-[240px] h-14 md:h-16 text-base md:text-lg rounded-2xl md:rounded-[2rem] bg-indigo-500/10 backdrop-blur-md border border-indigo-500/20 text-indigo-300 hover:bg-indigo-500/20 hover:text-white font-bold transition-all">
                     Join as Member
                   </RippleButton>
                 </Link>
@@ -234,30 +235,30 @@ const Index = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 1.1 }}
-              className="flex flex-wrap justify-center items-center gap-8 pt-4 border-t border-white/5"
+              className="flex flex-wrap justify-center items-center gap-x-6 gap-y-3 pt-6 border-t border-white/5 pb-20 md:pb-0"
             >
               <div className="flex items-center gap-2 group">
-                <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
-                <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest group-hover:text-foreground transition-colors">ID Verified</span>
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-green-500 animate-pulse shadow-[0_0_10px_rgba(34,197,94,0.5)]" />
+                <span className="text-[10px] md:text-sm font-bold text-muted-foreground uppercase tracking-widest group-hover:text-foreground transition-colors">ID Verified</span>
               </div>
               <div className="flex items-center gap-2 group">
-                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ animationDelay: '0.2s' }} />
-                <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest group-hover:text-foreground transition-colors">Safe Meetings</span>
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-blue-500 animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" style={{ animationDelay: '0.2s' }} />
+                <span className="text-[10px] md:text-sm font-bold text-muted-foreground uppercase tracking-widest group-hover:text-foreground transition-colors">Safe Meetings</span>
               </div>
               <div className="flex items-center gap-2 group">
-                <div className="w-2 h-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.5)]" style={{ animationDelay: '0.4s' }} />
-                <span className="text-sm font-bold text-muted-foreground uppercase tracking-widest group-hover:text-foreground transition-colors">Zero Hidden Fees</span>
+                <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-purple-500 animate-pulse shadow-[0_0_10px_rgba(168,85,247,0.5)]" style={{ animationDelay: '0.4s' }} />
+                <span className="text-[10px] md:text-sm font-bold text-muted-foreground uppercase tracking-widest group-hover:text-foreground transition-colors">Zero Hidden Fees</span>
               </div>
             </motion.div>
           </motion.div>
         </div>
 
-        {/* Scroll Indicator */}
+        {/* Scroll Indicator - Hidden on mobile to prevent overlap/clutter */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 1.5, duration: 1 }}
-          className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 text-muted-foreground/50"
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 flex-col items-center gap-3 text-muted-foreground/50 hidden md:flex"
         >
           <span className="text-[10px] font-bold uppercase tracking-[0.3em] mb-2 text-primary">Scroll To Discover</span>
           <div className="w-[1px] h-20 bg-gradient-to-b from-primary/50 to-transparent relative overflow-hidden">
@@ -291,9 +292,9 @@ const Index = () => {
             </Link>
           </div>
 
-          <BentoGrid columns={4} className="gap-8">
+          <BentoGrid columns={4} className="gap-6 md:gap-8">
             {/* Main Featured Card */}
-            <BentoItem span={2} rowSpan={2} className="p-0 border-0 bg-transparent rounded-[3rem] overflow-hidden group shadow-2xl relative min-h-[600px]">
+            <BentoItem span={2} rowSpan={2} className="p-0 border-0 bg-transparent rounded-[2rem] md:rounded-[3rem] overflow-hidden group shadow-2xl relative h-[400px] md:h-auto md:min-h-[600px]">
               <FloatingCard className="w-full h-full" tiltMaxAngle={3}>
                 <div className="relative w-full h-full">
                   <img
@@ -310,8 +311,8 @@ const Index = () => {
                       <span className="text-[10px] font-bold uppercase tracking-widest bg-white/10 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10">Online Now</span>
                     </div>
 
-                    <h3 className="text-5xl font-black mb-2 leading-none">Priya, 24</h3>
-                    <p className="text-lg text-white/70 mb-8 max-w-sm leading-relaxed">Graphic designer specializing in creative exploration.</p>
+                    <h3 className="text-3xl md:text-5xl font-black mb-2 leading-none">Priya, 24</h3>
+                    <p className="text-sm md:text-lg text-white/70 mb-6 md:mb-8 max-w-sm leading-relaxed">Graphic designer specializing in creative exploration.</p>
 
                     <div className="flex flex-wrap gap-2 mb-10">
                       {['Creative', 'Artistic'].map(tag => (
@@ -341,17 +342,17 @@ const Index = () => {
             <BentoItem className="bg-gradient-to-br from-primary via-indigo-600 to-violet-600 text-white p-10 flex flex-col justify-between border-0 shadow-2xl rounded-[3rem]">
               <TrendingUp className="w-12 h-12 mb-6 opacity-30" />
               <div>
-                <div className="text-7xl font-black mb-2 leading-none">{activeUserCount}+</div>
-                <p className="text-white/70 font-black uppercase tracking-[0.2em] text-xs">Verified Members</p>
+                <div className="text-5xl md:text-7xl font-black mb-2 leading-none">{activeUserCount}+</div>
+                <p className="text-white/70 font-black uppercase tracking-[0.2em] text-[10px] md:text-xs">Verified Members</p>
               </div>
             </BentoItem>
 
             {/* Satisfaction Card */}
-            <BentoItem className="bg-white/5 backdrop-blur-md p-10 flex flex-col justify-between border border-white/10 shadow-2xl rounded-[3rem]">
-              <Heart className="w-12 h-12 text-primary mb-6" />
+            <BentoItem className="bg-white/5 backdrop-blur-md p-8 md:p-10 flex flex-col justify-between border border-white/10 shadow-2xl rounded-[2.5rem] md:rounded-[3rem]">
+              <Heart className="w-10 h-10 md:w-12 md:h-12 text-primary mb-6" />
               <div>
-                <div className="text-6xl font-black mb-2 text-foreground">99%</div>
-                <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-xs">Satisfaction</p>
+                <div className="text-5xl md:text-6xl font-black mb-2 text-foreground">99%</div>
+                <p className="text-muted-foreground font-black uppercase tracking-[0.2em] text-[10px] md:text-xs">Satisfaction</p>
               </div>
             </BentoItem>
 
@@ -483,49 +484,7 @@ const Index = () => {
       <SafetyCTA />
 
       {/* Footer */}
-      <footer className="py-12 px-4 bg-surface border-t border-border">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-10 h-10 rounded-xl overflow-hidden shadow-glow">
-                  <img src="/logo.png" alt="Logo" className="w-full h-full object-cover" />
-                </div>
-                <span className="text-xl font-bold text-gradient-primary">Hangoutly</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Safe, verified companionship for meaningful connections.
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Platform</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/browse" className="hover:text-primary transition-colors">Browse</Link></li>
-                <li><Link to="/how-it-works" className="hover:text-primary transition-colors">How It Works</Link></li>
-                <li><Link to="/safety" className="hover:text-primary transition-colors">Safety</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Legal</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="hover:text-primary transition-colors">Terms of Service</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h4 className="font-semibold text-foreground mb-4">Connect</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link to="/contact" className="hover:text-primary transition-colors">Contact</Link></li>
-                <li><a href="mailto:support@hangoutly.com" className="hover:text-primary transition-colors">Support</a></li>
-              </ul>
-            </div>
-          </div>
-          <div className="pt-8 border-t border-border text-center text-sm text-muted-foreground">
-            <p>&copy;{new Date().getFullYear()}  Hangoutly. All rights reserved.</p>
-            <p>Made with ❤️ by <a href="https://github.com/hehewhy" target="_blank" rel="noopener noreferrer" className="hover:text-primary transition-colors">Groot</a></p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 };

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Header } from '@/components/Header';
+import { Footer } from '@/components/Footer';
 import {
   Shield, AlertTriangle, Phone, MapPin, Users, Lock,
   Eye, MessageCircle, Heart, ArrowLeft, CheckCircle2,
@@ -222,6 +223,7 @@ const SafetyPage = () => {
           </motion.div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

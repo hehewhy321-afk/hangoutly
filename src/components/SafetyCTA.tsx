@@ -20,7 +20,7 @@ export const SafetyCTA = () => {
             </div>
 
             <div className="container mx-auto max-w-7xl relative z-10">
-                <div className="bg-[#111420] border border-white/5 rounded-[3rem] p-8 md:p-16 overflow-hidden">
+                <div className="bg-[#111420] border border-white/5 rounded-[2rem] md:rounded-[3rem] p-6 md:p-16 overflow-hidden">
                     <div className="grid lg:grid-cols-2 gap-12 items-center">
 
                         {/* Left Content */}
@@ -99,7 +99,7 @@ export const SafetyCTA = () => {
                                 initial={{ opacity: 0, scale: 0.8 }}
                                 whileInView={{ opacity: 1, scale: 1 }}
                                 viewport={{ once: true }}
-                                className="relative w-72 h-72 md:w-96 md:h-96"
+                                className="relative w-64 h-64 md:w-96 md:h-96 shrink-0"
                             >
                                 {/* Rotating ring */}
                                 <motion.div

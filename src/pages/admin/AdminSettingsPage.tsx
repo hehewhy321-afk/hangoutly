@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Settings, Save, Loader2, DollarSign, Percent, Shield, Globe } from 'lucide-react';
+import { Settings, Save, Loader2, DollarSign, Percent, Shield, Globe, Info } from 'lucide-react';
 import { AdminLayout } from '@/components/AdminLayout';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -143,6 +143,65 @@ const AdminSettingsPage = () => {
                                         animate={{ x: settings.allow_global_signup ? 24 : 0 }}
                                         className={cn("w-4 h-4 rounded-full shadow-sm", settings.allow_global_signup ? "bg-indigo-500" : "bg-white")}
                                     />
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Banner Section */}
+                    <section className="md:col-span-2 glass-card p-10 border border-slate-200/60 shadow-xl bg-white rounded-[2.5rem] space-y-8">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                                <Globe className="w-5 h-5" />
+                            </div>
+                            <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest">Global Notification Banner</h3>
+                        </div>
+
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                            <div className="lg:col-span-1 space-y-6">
+                                <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100">
+                                    <div>
+                                        <p className="text-xs font-black text-slate-800">Enable Banner</p>
+                                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-tight">Display on mobile devices only</p>
+                                    </div>
+                                    <div className="w-12 h-6 bg-slate-200 rounded-full relative p-1 cursor-pointer" onClick={() => setSettings({ ...settings, banner_enabled: !settings.banner_enabled })}>
+                                        <motion.div
+                                            animate={{ x: settings.banner_enabled ? 24 : 0 }}
+                                            className={cn("w-4 h-4 rounded-full shadow-sm", settings.banner_enabled ? "bg-blue-500" : "bg-white")}
+                                        />
+                                    </div>
+                                </div>
+                                <p className="text-[9px] text-slate-400 font-medium leading-relaxed">
+                                    Use this to communicate important updates, mobile app availability, or experience recommendations to all users.
+                                </p>
+                            </div>
+
+                            <div className="lg:col-span-2 space-y-3">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Banner Content (Text)</Label>
+                                <Input
+                                    type="text"
+                                    placeholder="Enter banner message..."
+                                    value={settings.banner_text || ''}
+                                    onChange={(e) => setSettings({ ...settings, banner_text: e.target.value })}
+                                    className="h-14 rounded-2xl border-slate-200 font-bold"
+                                />
+                                <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 mt-6 relative overflow-hidden">
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Live Preview (Floating Popup)</p>
+                                    <div className="flex justify-center py-4">
+                                        <div className={cn(
+                                            "p-6 rounded-[2rem] bg-slate-900 text-white shadow-2xl transition-all w-full max-w-md border border-white/10",
+                                            !settings.banner_enabled && "opacity-20 grayscale scale-95"
+                                        )}>
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                                                    <Info className="w-5 h-5 text-blue-400" />
+                                                </div>
+                                                <p className="text-[11px] font-bold leading-relaxed">
+                                                    {settings.banner_text || 'No message configured'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
